@@ -14,7 +14,9 @@ import {
   doc,
   serverTimestamp,
   setDoc,
-  getDoc
+  getDoc,
+  updateDoc,
+  getDocs
 } from 'firebase/firestore';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -204,18 +206,40 @@ export default function Dashboard() {
       return;
     }
     
-    const updatedCategories = categories.map(cat => cat === oldName ? trimmed : cat);
-    setCategories(updatedCategories);
-    await saveUserCategories(user.uid, updatedCategories);
-    
-    // Update current selected category if it was edited
-    if (category === oldName) {
-      setCategory(trimmed);
+    try {
+      // Update category list
+      const updatedCategories = categories.map(cat => cat === oldName ? trimmed : cat);
+      setCategories(updatedCategories);
+      await saveUserCategories(user.uid, updatedCategories);
+      
+      // Update all transactions with old category name
+      const q = query(
+        collection(db, 'transactions'),
+        where('uid', '==', user.uid),
+        where('category', '==', oldName)
+      );
+      
+      const snapshot = await getDocs(q);
+      const updatePromises = snapshot.docs.map(docSnapshot => 
+        updateDoc(doc(db, 'transactions', docSnapshot.id), {
+          category: trimmed
+        })
+      );
+      
+      await Promise.all(updatePromises);
+      
+      // Update current selected category if it was edited
+      if (category === oldName) {
+        setCategory(trimmed);
+      }
+      
+      setEditingCategory(null);
+      setEditCategoryName('');
+      showToast(`Category updated! ${snapshot.docs.length} transaction(s) updated.`, 'success');
+    } catch (error) {
+      console.error('Error updating category:', error);
+      showToast('Error updating category: ' + error.message, 'error');
     }
-    
-    setEditingCategory(null);
-    setEditCategoryName('');
-    showToast('Category updated successfully!', 'success');
   }
 
   async function handleAddExpense(e) {
