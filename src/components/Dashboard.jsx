@@ -269,12 +269,10 @@ export default function Dashboard() {
   if (loading) {
     return (
       <div style={{ 
-        <div>
-          <h1 style={{ margin: 0, fontSize: '20px', color: '#333' }}>💰 Money Manager</h1>
-          <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: '#666' }}>
-            {user.displayName || user.email}
-          </p>
-        </div>ght: '100vh' 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh' 
       }}>
         <p>Loading...</p>
       </div>
@@ -294,7 +292,9 @@ export default function Dashboard() {
       }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '20px', color: '#333' }}>💰 Money Manager</h1>
-          <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: '#666' }}>{userName}</p>
+          <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: '#666' }}>
+            {user.displayName || user.email}
+          </p>
         </div>
         <button 
           onClick={handleLogout}
