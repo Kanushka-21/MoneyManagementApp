@@ -34,6 +34,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '', onConfirm: null });
 
   // Listen to auth state changes
   useEffect(() => {
@@ -86,6 +88,17 @@ export default function Dashboard() {
     }, 3000);
   }
 
+  function showConfirm(message, onConfirm) {
+    setConfirmDialog({ show: true, message, onConfirm });
+  }
+
+  function handleConfirmClose(confirmed) {
+    if (confirmed && confirmDialog.onConfirm) {
+      confirmDialog.onConfirm();
+    }
+    setConfirmDialog({ show: false, message: '', onConfirm: null });
+  }
+
   async function loadUserCategories(uid) {
     try {
       const docRef = doc(db, 'userSettings', uid);
@@ -123,13 +136,13 @@ export default function Dashboard() {
   }
 
   async function handleLogout() {
-    if (confirm('Are you sure you want to logout?')) {
+    showConfirm('Are you sure you want to logout?', async () => {
       try {
         await signOut(auth);
       } catch (error) {
         showToast('Logout failed: ' + error.message, 'error');
       }
-    }
+    });
   }
 
   async function handleAddCategory(e) {
@@ -157,17 +170,18 @@ export default function Dashboard() {
       showToast('You must have at least one category!', 'error');
       return;
     }
-    if (!confirm(`Remove category "${categoryToRemove}"?`)) return;
     
-    const updatedCategories = categories.filter(cat => cat !== categoryToRemove);
-    setCategories(updatedCategories);
-    await saveUserCategories(user.uid, updatedCategories);
-    
-    // If current selected category is being removed, clear it
-    if (category === categoryToRemove) {
-      setCategory('');
-    }
-    showToast('Category removed successfully!', 'success');
+    showConfirm(`Remove category "${categoryToRemove}"?`, async () => {
+      const updatedCategories = categories.filter(cat => cat !== categoryToRemove);
+      setCategories(updatedCategories);
+      await saveUserCategories(user.uid, updatedCategories);
+      
+      // If current selected category is being removed, clear it
+      if (category === categoryToRemove) {
+        setCategory('');
+      }
+      showToast('Category removed successfully!', 'success');
+    });
   }
 
   async function handleAddExpense(e) {
@@ -206,13 +220,14 @@ export default function Dashboard() {
   }
 
   async function handleDelete(id) {
-    if (!confirm('Delete this expense?')) return;
-    try {
-      await deleteDoc(doc(db, 'transactions', id));
-      showToast('Expense deleted successfully!', 'success');
-    } catch (error) {
-      showToast('Error deleting: ' + error.message, 'error');
-    }
+    showConfirm('Delete this expense?', async () => {
+      try {
+        await deleteDoc(doc(db, 'transactions', id));
+        showToast('Expense deleted successfully!', 'success');
+      } catch (error) {
+        showToast('Error deleting: ' + error.message, 'error');
+      }
+    });
   }
 
   // Filter transactions by period
@@ -229,6 +244,13 @@ export default function Dashboard() {
 
   // Calculate totals and percentages
   const total = filteredTxs.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+  
+  // Calculate today's expenses
+  const today = new Date().toISOString().split('T')[0];
+  const todayTotal = transactions
+    .filter(tx => tx.date === today)
+    .reduce((sum, tx) => sum + (tx.amount || 0), 0);
+  
   const byCategory = filteredTxs.reduce((acc, tx) => {
     acc[tx.category] = (acc[tx.category] || 0) + tx.amount;
     return acc;
@@ -361,41 +383,93 @@ export default function Dashboard() {
         flexWrap: 'wrap',
         gap: '10px'
       }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: '20px', color: '#333' }}>💰 Money Manager</h1>
-          <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: '#666' }}>
-            {user.displayName || user.email}
-          </p>
-        </div>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button 
-            onClick={() => setShowSettings(true)}
-            style={{
-              padding: '6px 14px',
-              fontSize: '13px',
-              backgroundColor: '#6c757d',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer'
-            }}
-          >
-            ⚙️ Settings
-          </button>
-          <button 
-            onClick={handleLogout}
-            style={{
-              padding: '6px 14px',
-              fontSize: '13px',
-              backgroundColor: '#dc3545',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              cursor: 'pointer'
-            }}
-          >
-            Logout
-          </button>
+        <div 
+          onClick={() => setShowProfileMenu(!showProfileMenu)}
+          style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '10px',
+            cursor: 'pointer',
+            position: 'relative'
+          }}
+        >
+          <div style={{
+            width: '40px',
+            height: '40px',
+            backgroundColor: '#4CAF50',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '24px'
+          }}>
+            💰
+          </div>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '20px', color: '#333' }}>Money Manager</h1>
+            <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: '#666' }}>
+              {user.displayName || user.email}
+            </p>
+          </div>
+          
+          {/* Dropdown Menu */}
+          {showProfileMenu && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              marginTop: '5px',
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              minWidth: '200px',
+              zIndex: 1000,
+              overflow: 'hidden'
+            }}>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowSettings(true);
+                  setShowProfileMenu(false);
+                }}
+                style={{
+                  padding: '12px 16px',
+                  cursor: 'pointer',
+                  borderBottom: '1px solid #f0f0f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+              >
+                <span>⚙️</span>
+                <span>Settings</span>
+              </div>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowProfileMenu(false);
+                  handleLogout();
+                }}
+                style={{
+                  padding: '12px 16px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  color: '#dc3545',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'white'}
+              >
+                <span>🚪</span>
+                <span>Logout</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -408,11 +482,24 @@ export default function Dashboard() {
         textAlign: 'center',
         boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
       }}>
-        <div style={{ fontSize: '14px', color: '#fff', opacity: 0.9, marginBottom: '5px' }}>
-          Total Spent
-        </div>
-        <div style={{ fontSize: '42px', fontWeight: 'bold', color: '#fff', letterSpacing: '-1px' }}>
-          LKR {total.toFixed(2)}
+        <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '15px' }}>
+          <div>
+            <div style={{ fontSize: '12px', color: '#fff', opacity: 0.9, marginBottom: '5px' }}>
+              Today
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#fff' }}>
+              LKR {todayTotal.toFixed(2)}
+            </div>
+          </div>
+          <div style={{ width: '1px', backgroundColor: 'rgba(255,255,255,0.3)' }}></div>
+          <div>
+            <div style={{ fontSize: '12px', color: '#fff', opacity: 0.9, marginBottom: '5px' }}>
+              Total Spent
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#fff' }}>
+              LKR {total.toFixed(2)}
+            </div>
+          </div>
         </div>
         <div style={{ marginTop: '10px' }}>
           <select
@@ -836,6 +923,87 @@ export default function Dashboard() {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Confirm Dialog */}
+      {confirmDialog.show && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '20px',
+          zIndex: 10000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '25px',
+            maxWidth: '400px',
+            width: '100%',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+          }}>
+            <div style={{
+              fontSize: '20px',
+              marginBottom: '8px',
+              textAlign: 'center'
+            }}>
+              ⚠️
+            </div>
+            <div style={{
+              fontSize: '16px',
+              color: '#333',
+              marginBottom: '25px',
+              textAlign: 'center',
+              lineHeight: '1.5'
+            }}>
+              {confirmDialog.message}
+            </div>
+            <div style={{
+              display: 'flex',
+              gap: '10px',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={() => handleConfirmClose(false)}
+                style={{
+                  padding: '10px 24px',
+                  fontSize: '15px',
+                  backgroundColor: '#f8f9fa',
+                  color: '#495057',
+                  border: '1px solid #dee2e6',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                  minWidth: '100px'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleConfirmClose(true)}
+                style={{
+                  padding: '10px 24px',
+                  fontSize: '15px',
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                  minWidth: '100px'
+                }}
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
       )}
