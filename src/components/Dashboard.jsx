@@ -33,6 +33,7 @@ export default function Dashboard() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
   // Listen to auth state changes
   useEffect(() => {
@@ -70,13 +71,20 @@ export default function Dashboard() {
       },
       (error) => {
         console.error('Error loading transactions:', error);
-        alert('Error loading transactions: ' + error.message);
+        showToast('Error loading transactions: ' + error.message, 'error');
         setLoading(false);
       }
     );
 
     return () => unsubscribe();
   }, [user]);
+
+  function showToast(message, type = 'success') {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: '' });
+    }, 3000);
+  }
 
   async function loadUserCategories(uid) {
     try {
@@ -109,7 +117,7 @@ export default function Dashboard() {
       await signInWithPopup(auth, googleProvider);
     } catch (error) {
       console.error('Login error:', error);
-      alert('Login failed: ' + error.message);
+      showToast('Login failed: ' + error.message, 'error');
       setLoading(false);
     }
   }
@@ -119,7 +127,7 @@ export default function Dashboard() {
       try {
         await signOut(auth);
       } catch (error) {
-        alert('Logout failed: ' + error.message);
+        showToast('Logout failed: ' + error.message, 'error');
       }
     }
   }
@@ -128,11 +136,11 @@ export default function Dashboard() {
     e.preventDefault();
     const trimmed = newCategoryName.trim();
     if (!trimmed) {
-      alert('Please enter a category name');
+      showToast('Please enter a category name', 'error');
       return;
     }
     if (categories.includes(trimmed)) {
-      alert('Category already exists');
+      showToast('Category already exists', 'error');
       return;
     }
     const updatedCategories = [...categories, trimmed];
@@ -141,11 +149,12 @@ export default function Dashboard() {
     setCategory(trimmed);
     setNewCategoryName('');
     setShowAddCategory(false);
+    showToast('Category added successfully!', 'success');
   }
 
   async function handleRemoveCategory(categoryToRemove) {
     if (categories.length <= 1) {
-      alert('You must have at least one category!');
+      showToast('You must have at least one category!', 'error');
       return;
     }
     if (!confirm(`Remove category "${categoryToRemove}"?`)) return;
@@ -158,17 +167,18 @@ export default function Dashboard() {
     if (category === categoryToRemove) {
       setCategory('');
     }
+    showToast('Category removed successfully!', 'success');
   }
 
   async function handleAddExpense(e) {
     e.preventDefault();
     if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-      alert('Please enter a valid amount');
+      showToast('Please enter a valid amount', 'error');
       return;
     }
     
     if (!category) {
-      alert('Please select a category');
+      showToast('Please select a category', 'error');
       return;
     }
     
@@ -188,10 +198,10 @@ export default function Dashboard() {
       console.log('Expense added successfully!');
       setAmount('');
       setNote('');
-      alert('Expense added successfully!');
+      showToast('Expense added successfully! 💰', 'success');
     } catch (error) {
       console.error('Error adding expense:', error);
-      alert('Error adding expense: ' + error.message + '\n\nMake sure Firestore is enabled in Firebase Console!');
+      showToast('Error adding expense: ' + error.message, 'error');
     }
   }
 
@@ -199,8 +209,9 @@ export default function Dashboard() {
     if (!confirm('Delete this expense?')) return;
     try {
       await deleteDoc(doc(db, 'transactions', id));
+      showToast('Expense deleted successfully!', 'success');
     } catch (error) {
-      alert('Error deleting: ' + error.message);
+      showToast('Error deleting: ' + error.message, 'error');
     }
   }
 
@@ -318,6 +329,29 @@ export default function Dashboard() {
 
   return (
     <div style={{ maxWidth: '600px', margin: '0 auto', padding: '15px' }}>
+      {/* Toast Notification */}
+      {toast.show && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: toast.type === 'success' ? '#28a745' : '#dc3545',
+          color: 'white',
+          padding: '15px 25px',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          zIndex: 9999,
+          fontSize: '15px',
+          fontWeight: '500',
+          maxWidth: '90%',
+          textAlign: 'center',
+          animation: 'slideDown 0.3s ease-out'
+        }}>
+          {toast.type === 'success' ? '✓ ' : '⚠ '}{toast.message}
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ 
         display: 'flex', 
