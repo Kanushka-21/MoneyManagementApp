@@ -39,9 +39,8 @@ export default function Dashboard() {
       setUser(currentUser);
       if (currentUser) {
         await loadUserCategories(currentUser.uid);
-      } else {
-        setLoading(false);
       }
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
@@ -98,9 +97,12 @@ export default function Dashboard() {
 
   async function handleLogin() {
     try {
+      setLoading(true);
       await signInWithPopup(auth, googleProvider);
     } catch (error) {
+      console.error('Login error:', error);
       alert('Login failed: ' + error.message);
+      setLoading(false);
     }
   }
 
