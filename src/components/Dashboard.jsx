@@ -482,23 +482,18 @@ export default function Dashboard() {
         textAlign: 'center',
         boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-around', marginBottom: '15px' }}>
-          <div>
-            <div style={{ fontSize: '12px', color: '#fff', opacity: 0.9, marginBottom: '5px' }}>
-              Today
-            </div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#fff' }}>
-              LKR {todayTotal.toFixed(2)}
-            </div>
+        <div style={{ fontSize: '14px', color: '#fff', opacity: 0.9, marginBottom: '5px' }}>
+          Total Spent
+        </div>
+        <div style={{ fontSize: '42px', fontWeight: 'bold', color: '#fff', letterSpacing: '-1px' }}>
+          LKR {total.toFixed(2)}
+        </div>
+        <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.3)' }}>
+          <div style={{ fontSize: '11px', color: '#fff', opacity: 0.8, marginBottom: '3px' }}>
+            Today
           </div>
-          <div style={{ width: '1px', backgroundColor: 'rgba(255,255,255,0.3)' }}></div>
-          <div>
-            <div style={{ fontSize: '12px', color: '#fff', opacity: 0.9, marginBottom: '5px' }}>
-              Total Spent
-            </div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#fff' }}>
-              LKR {total.toFixed(2)}
-            </div>
+          <div style={{ fontSize: '16px', fontWeight: '600', color: '#fff' }}>
+            LKR {todayTotal.toFixed(2)}
           </div>
         </div>
         <div style={{ marginTop: '10px' }}>
