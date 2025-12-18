@@ -32,6 +32,7 @@ export default function Dashboard() {
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Listen to auth state changes
   useEffect(() => {
@@ -140,6 +141,23 @@ export default function Dashboard() {
     setCategory(trimmed);
     setNewCategoryName('');
     setShowAddCategory(false);
+  }
+
+  async function handleRemoveCategory(categoryToRemove) {
+    if (categories.length <= 1) {
+      alert('You must have at least one category!');
+      return;
+    }
+    if (!confirm(`Remove category "${categoryToRemove}"?`)) return;
+    
+    const updatedCategories = categories.filter(cat => cat !== categoryToRemove);
+    setCategories(updatedCategories);
+    await saveUserCategories(user.uid, updatedCategories);
+    
+    // If current selected category is being removed, clear it
+    if (category === categoryToRemove) {
+      setCategory('');
+    }
   }
 
   async function handleAddExpense(e) {
@@ -315,20 +333,36 @@ export default function Dashboard() {
             {user.displayName || user.email}
           </p>
         </div>
-        <button 
-          onClick={handleLogout}
-          style={{
-            padding: '6px 14px',
-            fontSize: '13px',
-            backgroundColor: '#dc3545',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer'
-          }}
-        >
-          Logout
-        </button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button 
+            onClick={() => setShowSettings(true)}
+            style={{
+              padding: '6px 14px',
+              fontSize: '13px',
+              backgroundColor: '#6c757d',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer'
+            }}
+          >
+            ⚙️ Settings
+          </button>
+          <button 
+            onClick={handleLogout}
+            style={{
+              padding: '6px 14px',
+              fontSize: '13px',
+              backgroundColor: '#dc3545',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer'
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Total Display - BIG */}
@@ -628,6 +662,149 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: '20px',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '10px',
+            padding: '20px',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: '20px'
+            }}>
+              <h2 style={{ margin: 0, fontSize: '18px', color: '#333' }}>⚙️ Manage Categories</h2>
+              <button
+                onClick={() => setShowSettings(false)}
+                style={{
+                  padding: '5px 10px',
+                  fontSize: '18px',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#999'
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <p style={{ fontSize: '14px', color: '#666', marginBottom: '10px' }}>
+                Your custom categories:
+              </p>
+              {categories.map(cat => (
+                <div
+                  key={cat}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '10px 12px',
+                    marginBottom: '8px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '5px',
+                    border: '1px solid #dee2e6'
+                  }}
+                >
+                  <span style={{ fontSize: '15px', color: '#333' }}>{cat}</span>
+                  <button
+                    onClick={() => handleRemoveCategory(cat)}
+                    style={{
+                      padding: '4px 10px',
+                      fontSize: '12px',
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ marginBottom: '15px' }}>
+              <input
+                type="text"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="New category name"
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  fontSize: '15px',
+                  border: '2px solid #ddd',
+                  borderRadius: '5px',
+                  boxSizing: 'border-box'
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddCategory(e);
+                  }
+                }}
+              />
+            </div>
+
+            <button
+              onClick={handleAddCategory}
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '15px',
+                backgroundColor: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}
+            >
+              ➕ Add Category
+            </button>
+
+            <button
+              onClick={() => setShowSettings(false)}
+              style={{
+                width: '100%',
+                padding: '10px',
+                fontSize: '14px',
+                backgroundColor: '#f8f9fa',
+                color: '#495057',
+                border: '1px solid #dee2e6',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                marginTop: '10px'
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
