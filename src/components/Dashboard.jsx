@@ -28,6 +28,7 @@ export default function Dashboard() {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
   const [note, setNote] = useState('');
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [period, setPeriod] = useState('month');
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -197,14 +198,14 @@ export default function Dashboard() {
     }
     
     try {
-      console.log('Adding expense...', { amount, category, note });
+      console.log('Adding expense...', { amount, category, note, date });
       
       await addDoc(collection(db, 'transactions'), {
         uid: user.uid,
         amount: parseFloat(amount),
         category,
         note,
-        date: new Date().toISOString().split('T')[0],
+        date: date,
         currency: 'LKR',
         createdAt: serverTimestamp()
       });
@@ -212,6 +213,7 @@ export default function Dashboard() {
       console.log('Expense added successfully!');
       setAmount('');
       setNote('');
+      setDate(new Date().toISOString().split('T')[0]);
       showToast('Expense added successfully! 💰', 'success');
     } catch (error) {
       console.error('Error adding expense:', error);
@@ -584,6 +586,25 @@ export default function Dashboard() {
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
+          </div>
+
+          <div style={{ marginBottom: '12px' }}>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              max={new Date().toISOString().split('T')[0]}
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '16px',
+                border: '2px solid #ddd',
+                borderRadius: '8px',
+                boxSizing: 'border-box',
+                backgroundColor: 'white'
+              }}
+              required
+            />
           </div>
 
           {!showAddCategory ? (
