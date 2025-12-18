@@ -29,6 +29,7 @@ export default function Dashboard() {
   const [category, setCategory] = useState('');
   const [note, setNote] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [type, setType] = useState('expense');
   const [period, setPeriod] = useState('month');
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -198,7 +199,7 @@ export default function Dashboard() {
     }
     
     try {
-      console.log('Adding expense...', { amount, category, note, date });
+      console.log('Adding transaction...', { amount, category, note, date, type });
       
       await addDoc(collection(db, 'transactions'), {
         uid: user.uid,
@@ -206,15 +207,16 @@ export default function Dashboard() {
         category,
         note,
         date: date,
+        type: type,
         currency: 'LKR',
         createdAt: serverTimestamp()
       });
       
-      console.log('Expense added successfully!');
+      console.log('Transaction added successfully!');
       setAmount('');
       setNote('');
       setDate(new Date().toISOString().split('T')[0]);
-      showToast('Expense added successfully! 💰', 'success');
+      showToast(`${type === 'income' ? 'Income' : 'Expense'} added successfully! 💰`, 'success');
     } catch (error) {
       console.error('Error adding expense:', error);
       showToast('Error adding expense: ' + error.message, 'error');
@@ -222,10 +224,10 @@ export default function Dashboard() {
   }
 
   async function handleDelete(id) {
-    showConfirm('Delete this expense?', async () => {
+    showConfirm('Delete this transaction?', async () => {
       try {
         await deleteDoc(doc(db, 'transactions', id));
-        showToast('Expense deleted successfully!', 'success');
+        showToast('Transaction deleted successfully!', 'success');
       } catch (error) {
         showToast('Error deleting: ' + error.message, 'error');
       }
@@ -245,15 +247,23 @@ export default function Dashboard() {
   });
 
   // Calculate totals and percentages
-  const total = filteredTxs.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+  const expenses = filteredTxs.filter(tx => tx.type !== 'income');
+  const incomes = filteredTxs.filter(tx => tx.type === 'income');
   
-  // Calculate today's expenses
+  const totalExpenses = expenses.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+  const totalIncome = incomes.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+  const balance = totalIncome - totalExpenses;
+  
+  // Calculate today's transactions
   const today = new Date().toISOString().split('T')[0];
-  const todayTotal = transactions
-    .filter(tx => tx.date === today)
+  const todayExpenses = transactions
+    .filter(tx => tx.date === today && tx.type !== 'income')
+    .reduce((sum, tx) => sum + (tx.amount || 0), 0);
+  const todayIncome = transactions
+    .filter(tx => tx.date === today && tx.type === 'income')
     .reduce((sum, tx) => sum + (tx.amount || 0), 0);
   
-  const byCategory = filteredTxs.reduce((acc, tx) => {
+  const byCategory = expenses.reduce((acc, tx) => {
     acc[tx.category] = (acc[tx.category] || 0) + tx.amount;
     return acc;
   }, {});
@@ -261,7 +271,7 @@ export default function Dashboard() {
   const categoryPercentages = Object.entries(byCategory).map(([cat, amt]) => ({
     category: cat,
     amount: amt,
-    percentage: total > 0 ? ((amt / total) * 100).toFixed(1) : 0
+    percentage: totalExpenses > 0 ? ((amt / totalExpenses) * 100).toFixed(1) : 0
   })).sort((a, b) => b.amount - a.amount);
 
   // Pie chart data
@@ -292,7 +302,7 @@ export default function Dashboard() {
           label: (context) => {
             const label = context.label || '';
             const value = context.parsed || 0;
-            const percentage = ((value / total) * 100).toFixed(1);
+            const percentage = ((value / totalExpenses) * 100).toFixed(1);
             return `${label}: LKR ${value.toFixed(2)} (${percentage}%)`;
           }
         }
@@ -485,17 +495,34 @@ export default function Dashboard() {
         boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
       }}>
         <div style={{ fontSize: '14px', color: '#fff', opacity: 0.9, marginBottom: '5px' }}>
-          Total Spent
+          Balance
         </div>
         <div style={{ fontSize: '42px', fontWeight: 'bold', color: '#fff', letterSpacing: '-1px' }}>
-          LKR {total.toFixed(2)}
+          LKR {balance.toFixed(2)}
         </div>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '15px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.3)' }}>
+          <div>
+            <div style={{ fontSize: '11px', color: '#fff', opacity: 0.8, marginBottom: '3px' }}>
+              Income
+            </div>
+            <div style={{ fontSize: '18px', fontWeight: '600', color: '#fff' }}>
+              +{totalIncome.toFixed(2)}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: '11px', color: '#fff', opacity: 0.8, marginBottom: '3px' }}>
+              Expenses
+            </div>
+            <div style={{ fontSize: '18px', fontWeight: '600', color: '#fff' }}>
+              -{totalExpenses.toFixed(2)}
+            </div>
+          </div>
+        </div>
+        
         <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.3)' }}>
           <div style={{ fontSize: '11px', color: '#fff', opacity: 0.8, marginBottom: '3px' }}>
-            Today
-          </div>
-          <div style={{ fontSize: '16px', fontWeight: '600', color: '#fff' }}>
-            LKR {todayTotal.toFixed(2)}
+            Today: Income +{todayIncome.toFixed(2)} | Expenses -{todayExpenses.toFixed(2)}
           </div>
         </div>
         <div style={{ marginTop: '10px' }}>
@@ -537,7 +564,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Add Expense Form */}
+      {/* Add Transaction Form */}
       <div style={{
         backgroundColor: 'white',
         padding: '15px',
@@ -545,8 +572,48 @@ export default function Dashboard() {
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         marginBottom: '15px'
       }}>
-        <h2 style={{ marginTop: 0, fontSize: '16px', color: '#333', marginBottom: '15px' }}>➕ Add Expense</h2>
+        <h2 style={{ marginTop: 0, fontSize: '16px', color: '#333', marginBottom: '15px' }}>
+          {type === 'income' ? '💵 Add Income' : '➕ Add Expense'}
+        </h2>
         <form onSubmit={handleAddExpense}>
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setType('expense')}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  fontSize: '15px',
+                  backgroundColor: type === 'expense' ? '#dc3545' : '#f8f9fa',
+                  color: type === 'expense' ? 'white' : '#495057',
+                  border: type === 'expense' ? 'none' : '1px solid #dee2e6',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                Expense
+              </button>
+              <button
+                type="button"
+                onClick={() => setType('income')}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  fontSize: '15px',
+                  backgroundColor: type === 'income' ? '#28a745' : '#f8f9fa',
+                  color: type === 'income' ? 'white' : '#495057',
+                  border: type === 'income' ? 'none' : '1px solid #dee2e6',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                Income
+              </button>
+            </div>
+          </div>
           <div style={{ marginBottom: '12px' }}>
             <input
               type="number"
@@ -696,7 +763,7 @@ export default function Dashboard() {
               width: '100%',
               padding: '14px',
               fontSize: '16px',
-              backgroundColor: '#28a745',
+              backgroundColor: type === 'income' ? '#28a745' : '#dc3545',
               color: 'white',
               border: 'none',
               borderRadius: '8px',
@@ -704,7 +771,7 @@ export default function Dashboard() {
               fontWeight: 'bold'
             }}
           >
-            💾 Save Expense
+            💾 Save {type === 'income' ? 'Income' : 'Expense'}
           </button>
         </form>
       </div>
@@ -722,7 +789,7 @@ export default function Dashboard() {
         
         {filteredTxs.length === 0 ? (
           <p style={{ color: '#999', textAlign: 'center', padding: '30px 20px', fontSize: '14px' }}>
-            No expenses yet. Add your first expense above! 👆
+            No transactions yet. Add your first transaction above! 👆
           </p>
         ) : (
           <div>
@@ -735,7 +802,8 @@ export default function Dashboard() {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  gap: '15px'
+                  gap: '15px',
+                  backgroundColor: tx.type === 'income' ? 'rgba(40, 167, 69, 0.05)' : 'transparent'
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -743,8 +811,12 @@ export default function Dashboard() {
                     fontSize: '16px', 
                     fontWeight: '700', 
                     color: '#222', 
-                    marginBottom: '4px' 
+                    marginBottom: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}>
+                    {tx.type === 'income' ? '💵' : '💸'}
                     {tx.category}
                   </div>
                   {tx.note && (
@@ -774,10 +846,10 @@ export default function Dashboard() {
                   <div style={{ 
                     fontSize: '18px', 
                     fontWeight: 'bold', 
-                    color: '#e74c3c', 
+                    color: tx.type === 'income' ? '#28a745' : '#e74c3c', 
                     whiteSpace: 'nowrap' 
                   }}>
-                    LKR {tx.amount.toFixed(2)}
+                    {tx.type === 'income' ? '+' : '-'}LKR {tx.amount.toFixed(2)}
                   </div>
                   <button
                     onClick={() => handleDelete(tx.id)}
