@@ -34,6 +34,8 @@ export default function Dashboard() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [type, setType] = useState('expense');
   const [period, setPeriod] = useState('month');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [loading, setLoading] = useState(true);
@@ -296,7 +298,13 @@ export default function Dashboard() {
   const filteredTxs = transactions.filter(tx => {
     if (!tx.date) return false;
     const txDate = new Date(tx.date);
-    if (period === 'month') {
+    
+    if (period === 'custom') {
+      if (!startDate || !endDate) return false;
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      return txDate >= start && txDate <= end;
+    } else if (period === 'month') {
       return txDate.getMonth() === now.getMonth() && txDate.getFullYear() === now.getFullYear();
     } else {
       return txDate.getFullYear() === now.getFullYear();
@@ -602,7 +610,14 @@ export default function Dashboard() {
         <div style={{ marginTop: '10px' }}>
           <select
             value={period}
-            onChange={(e) => setPeriod(e.target.value)}
+            onChange={(e) => {
+              setPeriod(e.target.value);
+              if (e.target.value === 'custom' && !startDate) {
+                // Set default start date to beginning of current month
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                setStartDate(firstDay.toISOString().split('T')[0]);
+              }
+            }}
             style={{
               padding: '6px 12px',
               fontSize: '13px',
@@ -616,7 +631,50 @@ export default function Dashboard() {
           >
             <option value="month">This Month</option>
             <option value="year">This Year</option>
+            <option value="custom">Custom Range</option>
           </select>
+          
+          {period === 'custom' && (
+            <div style={{ marginTop: '10px', display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <label style={{ fontSize: '10px', color: '#fff', opacity: 0.8 }}>From</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  max={endDate}
+                  style={{
+                    padding: '5px 8px',
+                    fontSize: '12px',
+                    border: 'none',
+                    borderRadius: '5px',
+                    backgroundColor: 'rgba(255,255,255,0.9)',
+                    color: '#333',
+                    cursor: 'pointer'
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                <label style={{ fontSize: '10px', color: '#fff', opacity: 0.8 }}>To</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  min={startDate}
+                  max={new Date().toISOString().split('T')[0]}
+                  style={{
+                    padding: '5px 8px',
+                    fontSize: '12px',
+                    border: 'none',
+                    borderRadius: '5px',
+                    backgroundColor: 'rgba(255,255,255,0.9)',
+                    color: '#333',
+                    cursor: 'pointer'
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
