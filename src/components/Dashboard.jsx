@@ -58,14 +58,21 @@ export default function Dashboard() {
       orderBy('date', 'desc')
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const txs = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setTransactions(txs);
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        const txs = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setTransactions(txs);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error loading transactions:', error);
+        alert('Error loading transactions: ' + error.message);
+        setLoading(false);
+      }
+    );
 
     return () => unsubscribe();
   }, [user]);
@@ -142,7 +149,14 @@ export default function Dashboard() {
       return;
     }
     
+    if (!category) {
+      alert('Please select a category');
+      return;
+    }
+    
     try {
+      console.log('Adding expense...', { amount, category, note });
+      
       await addDoc(collection(db, 'transactions'), {
         uid: user.uid,
         amount: parseFloat(amount),
@@ -153,10 +167,13 @@ export default function Dashboard() {
         createdAt: serverTimestamp()
       });
       
+      console.log('Expense added successfully!');
       setAmount('');
       setNote('');
+      alert('Expense added successfully!');
     } catch (error) {
-      alert('Error adding expense: ' + error.message);
+      console.error('Error adding expense:', error);
+      alert('Error adding expense: ' + error.message + '\n\nMake sure Firestore is enabled in Firebase Console!');
     }
   }
 
