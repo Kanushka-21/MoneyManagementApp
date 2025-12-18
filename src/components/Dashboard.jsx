@@ -38,6 +38,8 @@ export default function Dashboard() {
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '', onConfirm: null });
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [editCategoryName, setEditCategoryName] = useState('');
 
   // Listen to auth state changes
   useEffect(() => {
@@ -184,6 +186,36 @@ export default function Dashboard() {
       }
       showToast('Category removed successfully!', 'success');
     });
+  }
+
+  async function handleEditCategory(oldName, newName) {
+    const trimmed = newName.trim();
+    if (!trimmed) {
+      showToast('Please enter a category name', 'error');
+      return;
+    }
+    if (oldName === trimmed) {
+      setEditingCategory(null);
+      setEditCategoryName('');
+      return;
+    }
+    if (categories.includes(trimmed)) {
+      showToast('Category already exists', 'error');
+      return;
+    }
+    
+    const updatedCategories = categories.map(cat => cat === oldName ? trimmed : cat);
+    setCategories(updatedCategories);
+    await saveUserCategories(user.uid, updatedCategories);
+    
+    // Update current selected category if it was edited
+    if (category === oldName) {
+      setCategory(trimmed);
+    }
+    
+    setEditingCategory(null);
+    setEditCategoryName('');
+    showToast('Category updated successfully!', 'success');
   }
 
   async function handleAddExpense(e) {
@@ -931,26 +963,114 @@ export default function Dashboard() {
                     alignItems: 'center',
                     padding: '10px 12px',
                     marginBottom: '8px',
-                    backgroundColor: '#f8f9fa',
+                    backgroundColor: editingCategory === cat ? '#e7f3ff' : '#f8f9fa',
                     borderRadius: '5px',
-                    border: '1px solid #dee2e6'
+                    border: editingCategory === cat ? '2px solid #007bff' : '1px solid #dee2e6'
                   }}
                 >
-                  <span style={{ fontSize: '15px', color: '#333' }}>{cat}</span>
-                  <button
-                    onClick={() => handleRemoveCategory(cat)}
-                    style={{
-                      padding: '4px 10px',
-                      fontSize: '12px',
-                      backgroundColor: '#dc3545',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Remove
-                  </button>
+                  {editingCategory === cat ? (
+                    <input
+                      type="text"
+                      value={editCategoryName}
+                      onChange={(e) => setEditCategoryName(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleEditCategory(cat, editCategoryName);
+                        }
+                      }}
+                      onBlur={() => {
+                        setEditingCategory(null);
+                        setEditCategoryName('');
+                      }}
+                      autoFocus
+                      style={{
+                        flex: 1,
+                        padding: '6px 8px',
+                        fontSize: '15px',
+                        border: 'none',
+                        backgroundColor: 'transparent',
+                        outline: 'none',
+                        color: '#333'
+                      }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: '15px', color: '#333' }}>{cat}</span>
+                  )}
+                  <div style={{ display: 'flex', gap: '5px' }}>
+                    {editingCategory === cat ? (
+                      <>
+                        <button
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            handleEditCategory(cat, editCategoryName);
+                          }}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '12px',
+                            backgroundColor: '#28a745',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Save
+                        </button>
+                        <button
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setEditingCategory(null);
+                            setEditCategoryName('');
+                          }}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '12px',
+                            backgroundColor: '#6c757d',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => {
+                            setEditingCategory(cat);
+                            setEditCategoryName(cat);
+                          }}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '12px',
+                            backgroundColor: '#007bff',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleRemoveCategory(cat)}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '12px',
+                            backgroundColor: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
