@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { auth, googleProvider, db } from '../firebase.js';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import { 
@@ -19,7 +20,7 @@ import {
   getDocs
 } from 'firebase/firestore';
 
-ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
+ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ChartDataLabels);
 
 const DEFAULT_CATEGORIES = ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Other'];
 
@@ -360,6 +361,9 @@ export default function Dashboard() {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
+      datalabels: {
+        display: false
+      },
       legend: {
         position: 'bottom',
         labels: {
@@ -990,8 +994,23 @@ export default function Dashboard() {
                       label: (context) => {
                         const label = context.dataset.label || '';
                         const value = context.parsed.x || 0;
-                        return `${label}: LKR ${value.toFixed(2)}`;
+                        const total = context.dataset.label === 'Income' ? totalIncome : totalExpenses;
+                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                        return `${label}: LKR ${value.toFixed(2)} (${percentage}%)`;
                       }
+                    }
+                  },
+                  datalabels: {
+                    display: true,
+                    color: 'white',
+                    font: {
+                      weight: 'bold',
+                      size: 11
+                    },
+                    formatter: (value, context) => {
+                      const total = context.dataset.label === 'Income' ? totalIncome : totalExpenses;
+                      const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                      return value > 0 ? `${percentage}%` : '';
                     }
                   }
                 },
