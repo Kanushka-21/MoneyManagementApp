@@ -3,14 +3,14 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// TODO: Replace with your Firebase project config from Firebase Console
 const firebaseConfig = {
-  apiKey: "AIzaSyBXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef123456"
+  apiKey: "AIzaSyDU2epDZL_pduvxDdsLumGRjhaeTlMZFpc",
+  authDomain: "moneymanagementapp-cfc44.firebaseapp.com",
+  projectId: "moneymanagementapp-cfc44",
+  storageBucket: "moneymanagementapp-cfc44.firebasestorage.app",
+  messagingSenderId: "698654609012",
+  appId: "1:698654609012:web:ab672168093971af1e4b21",
+  measurementId: "G-0EZB76PLZE"
 };
 
 const app = initializeApp(firebaseConfig);
