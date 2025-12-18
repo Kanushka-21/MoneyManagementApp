@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Pie, Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 import { auth, googleProvider, db } from '../firebase.js';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import { 
@@ -19,7 +19,7 @@ import {
   getDocs
 } from 'firebase/firestore';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
 const DEFAULT_CATEGORIES = ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Other'];
 
@@ -323,6 +323,20 @@ export default function Dashboard() {
     acc[tx.category] = (acc[tx.category] || 0) + tx.amount;
     return acc;
   }, {});
+
+  // Calculate category-wise income
+  const byCategoryIncome = incomes.reduce((acc, tx) => {
+    acc[tx.category] = (acc[tx.category] || 0) + tx.amount;
+    return acc;
+  }, {});
+
+  // Combine all categories from both income and expenses
+  const allCategoriesSet = new Set([...Object.keys(byCategory), ...Object.keys(byCategoryIncome)]);
+  const categoryBreakdown = Array.from(allCategoriesSet).map(cat => ({
+    category: cat,
+    income: byCategoryIncome[cat] || 0,
+    expense: byCategory[cat] || 0
+  })).sort((a, b) => (b.income + b.expense) - (a.income + a.expense));
 
   const categoryPercentages = Object.entries(byCategory).map(([cat, amt]) => ({
     category: cat,
@@ -927,6 +941,100 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Category Breakdown Chart */}
+      {categoryBreakdown.length > 0 && (
+        <div style={{
+          backgroundColor: 'white',
+          padding: '15px',
+          borderRadius: '10px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          marginBottom: '15px'
+        }}>
+          <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#333' }}>
+            📊 Category Breakdown
+          </h3>
+          <div style={{ height: Math.max(300, categoryBreakdown.length * 50) + 'px' }}>
+            <Bar 
+              data={{
+                labels: categoryBreakdown.map(c => c.category),
+                datasets: [
+                  {
+                    label: 'Income',
+                    data: categoryBreakdown.map(c => c.income),
+                    backgroundColor: '#28a745',
+                    borderRadius: 5
+                  },
+                  {
+                    label: 'Expenses',
+                    data: categoryBreakdown.map(c => c.expense),
+                    backgroundColor: '#dc3545',
+                    borderRadius: 5
+                  }
+                ]
+              }}
+              options={{
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    position: 'top',
+                    labels: {
+                      padding: 10,
+                      font: { size: 12 }
+                    }
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: (context) => {
+                        const label = context.dataset.label || '';
+                        const value = context.parsed.x || 0;
+                        return `${label}: LKR ${value.toFixed(2)}`;
+                      }
+                    }
+                  }
+                },
+                scales: {
+                  x: {
+                    beginAtZero: true,
+                    ticks: {
+                      callback: function(value) {
+                        return 'LKR ' + value;
+                      }
+                    }
+                  }
+                }
+              }}
+            />
+          </div>
+          <div style={{ marginTop: '15px', fontSize: '12px', color: '#666' }}>
+            {categoryBreakdown.map((cat, idx) => (
+              <div 
+                key={cat.category}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '8px 10px',
+                  backgroundColor: idx % 2 === 0 ? '#f8f9fa' : 'white',
+                  borderRadius: '4px',
+                  marginBottom: '4px'
+                }}
+              >
+                <span style={{ fontWeight: '600', color: '#333' }}>{cat.category}</span>
+                <span>
+                  <span style={{ color: '#28a745', marginRight: '10px' }}>
+                    +{cat.income.toFixed(2)}
+                  </span>
+                  <span style={{ color: '#dc3545' }}>
+                    -{cat.expense.toFixed(2)}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Settings Modal */}
       {showSettings && (
