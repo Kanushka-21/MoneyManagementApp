@@ -750,6 +750,32 @@ export default function Dashboard() {
             <option value="year" style={{ padding: '8px' }}>This Year</option>
             <option value="custom" style={{ padding: '8px' }}>Custom Range</option>
           </select>
+
+          {/* Date Range Display */}
+          <div style={{ 
+            marginTop: '8px', 
+            fontSize: '11px', 
+            color: '#fff', 
+            opacity: 0.9,
+            textAlign: 'center',
+            fontWeight: '500'
+          }}>
+            {period === 'month' && (
+              <span>
+                {new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString('en-CA')} - {new Date(now.getFullYear(), now.getMonth() + 1, 0).toLocaleDateString('en-CA')}
+              </span>
+            )}
+            {period === 'year' && (
+              <span>
+                {now.getFullYear()}.01.01 - {now.getFullYear()}.12.31
+              </span>
+            )}
+            {period === 'custom' && startDate && endDate && (
+              <span>
+                {startDate} - {endDate}
+              </span>
+            )}
+          </div>
           
           {period === 'custom' && (
             <div style={{ marginTop: '10px', display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
@@ -1218,12 +1244,12 @@ export default function Dashboard() {
                     color: 'white',
                     font: {
                       weight: 'bold',
-                      size: 11
+                      size: 10
                     },
                     formatter: (value, context) => {
                       const total = context.dataset.label === 'Income' ? totalIncome : totalExpenses;
                       const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                      return value > 0 ? `${percentage}%` : '';
+                      return value > 0 ? `${value.toFixed(0)} (${percentage}%)` : '';
                     }
                   }
                 },
