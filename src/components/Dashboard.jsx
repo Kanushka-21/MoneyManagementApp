@@ -303,7 +303,9 @@ export default function Dashboard() {
     if (period === 'custom') {
       if (!startDate || !endDate) return false;
       const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
       const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
       return txDate >= start && txDate <= end;
     } else if (period === 'month') {
       return txDate.getMonth() === now.getMonth() && txDate.getFullYear() === now.getFullYear();
@@ -785,7 +787,7 @@ export default function Dashboard() {
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  max={endDate}
+                  max={new Date().toISOString().split('T')[0]}
                   style={{
                     padding: '5px 8px',
                     fontSize: '12px',
@@ -803,7 +805,6 @@ export default function Dashboard() {
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  min={startDate}
                   max={new Date().toISOString().split('T')[0]}
                   style={{
                     padding: '5px 8px',
