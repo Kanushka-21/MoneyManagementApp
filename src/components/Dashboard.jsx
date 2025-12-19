@@ -393,44 +393,7 @@ export default function Dashboard() {
     }
   };
 
-  if (!user) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        minHeight: '100vh',
-        padding: '20px'
-      }}>
-        <h1 style={{ marginBottom: '20px', color: '#333' }}>💰 Money Manager</h1>
-        <p style={{ marginBottom: '30px', color: '#666', textAlign: 'center' }}>
-          Track your expenses across all devices
-        </p>
-        <button 
-          onClick={handleLogin}
-          style={{
-            padding: '12px 30px',
-            fontSize: '16px',
-            backgroundColor: '#4285f4',
-            color: 'white',
-            border: 'none',
-            borderRadius: '5px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '10px'
-          }}
-        >
-          <span>Sign in with Google</span>
-        </button>
-        <p style={{ marginTop: '20px', fontSize: '12px', color: '#999' }}>
-          Your data syncs across all devices in real-time
-        </p>
-      </div>
-    );
-  }
-
+  // Show loading screen first
   if (loading) {
     return (
       <div style={{ 
@@ -481,6 +444,116 @@ export default function Dashboard() {
             50% { transform: scale(1.05); }
           }
         `}</style>
+      </div>
+    );
+  }
+
+  // Show login page only after loading is complete and user is not authenticated
+  if (!user) {
+    return (
+      <div style={{ 
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        minHeight: '100vh',
+        backgroundColor: '#f5f5f5'
+      }}>
+        <div style={{
+          width: '80px',
+          height: '80px',
+          backgroundColor: '#4CAF50',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '48px',
+          marginBottom: '20px',
+          animation: 'pulse 2s ease-in-out infinite'
+        }}>
+          💰
+        </div>
+        <h2 style={{ 
+          margin: '0 0 10px 0', 
+          fontSize: '24px', 
+          color: '#333',
+          fontWeight: '600'
+        }}>
+          Money Manager
+        </h2>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '4px solid #f3f3f3',
+          borderTop: '4px solid #4CAF50',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }}></div>
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // Show login page only after loading is complete and user is not authenticated
+  if (!user) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        minHeight: '100vh',
+        padding: '20px',
+        backgroundColor: '#f5f5f5'
+      }}>
+        <div style={{
+          width: '80px',
+          height: '80px',
+          backgroundColor: '#4CAF50',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '48px',
+          marginBottom: '20px'
+        }}>
+          💰
+        </div>
+        <h1 style={{ margin: '0 0 10px 0', fontSize: '28px', color: '#333', fontWeight: '600' }}>Money Manager</h1>
+        <p style={{ marginBottom: '30px', color: '#666', textAlign: 'center', fontSize: '14px' }}>
+          Track your expenses across all devices
+        </p>
+        <button 
+          onClick={handleLogin}
+          style={{
+            padding: '12px 30px',
+            fontSize: '16px',
+            backgroundColor: '#4285f4',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            fontWeight: '500',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}
+        >
+          <span>Sign in with Google</span>
+        </button>
+        <p style={{ marginTop: '20px', fontSize: '12px', color: '#999' }}>
+          Your data syncs across all devices in real-time
+        </p>
       </div>
     );
   }
