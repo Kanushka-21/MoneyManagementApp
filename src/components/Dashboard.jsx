@@ -69,7 +69,7 @@ export default function Dashboard() {
     const q = query(
       collection(db, 'transactions'),
       where('uid', '==', user.uid),
-      orderBy('date', 'desc')
+      orderBy('createdAt', 'desc')
     );
 
     const unsubscribe = onSnapshot(q, 
