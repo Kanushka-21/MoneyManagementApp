@@ -734,19 +734,21 @@ export default function Dashboard() {
               }
             }}
             style={{
-              padding: '6px 12px',
+              padding: '8px 12px',
               fontSize: '13px',
               border: 'none',
-              borderRadius: '5px',
-              backgroundColor: 'rgba(255,255,255,0.3)',
-              color: 'white',
+              borderRadius: '8px',
+              backgroundColor: 'rgba(255,255,255,0.95)',
+              color: '#2c3e50',
               cursor: 'pointer',
-              fontWeight: '500'
+              fontWeight: '500',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              transition: 'all 0.2s ease'
             }}
           >
-            <option value="month">This Month</option>
-            <option value="year">This Year</option>
-            <option value="custom">Custom Range</option>
+            <option value="month" style={{ padding: '8px' }}>This Month</option>
+            <option value="year" style={{ padding: '8px' }}>This Year</option>
+            <option value="custom" style={{ padding: '8px' }}>Custom Range</option>
           </select>
           
           {period === 'custom' && (
@@ -886,18 +888,22 @@ export default function Dashboard() {
               onChange={(e) => setCategory(e.target.value)}
               style={{
                 width: '100%',
-                padding: '12px',
+                padding: '14px',
                 fontSize: '16px',
-                border: '2px solid #ddd',
-                borderRadius: '8px',
+                border: '2px solid #e0e0e0',
+                borderRadius: '10px',
                 boxSizing: 'border-box',
-                backgroundColor: 'white'
+                backgroundColor: 'white',
+                color: '#2c3e50',
+                fontWeight: '500',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                transition: 'all 0.2s ease'
               }}
               required
             >
-              <option value="">Select Category</option>
+              <option value="" style={{ color: '#999' }}>Select Category</option>
               {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat} value={cat} style={{ padding: '10px', color: '#2c3e50' }}>{cat}</option>
               ))}
             </select>
           </div>
