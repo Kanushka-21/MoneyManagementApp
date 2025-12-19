@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [confirmDialog, setConfirmDialog] = useState({ show: false, message: '', onConfirm: null });
   const [editingCategory, setEditingCategory] = useState(null);
   const [editCategoryName, setEditCategoryName] = useState('');
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
 
   // Listen to auth state changes
   useEffect(() => {
@@ -966,7 +967,7 @@ export default function Dashboard() {
           </p>
         ) : (
           <div>
-            {filteredTxs.map((tx) => (
+            {(showAllTransactions ? filteredTxs : filteredTxs.slice(0, 5)).map((tx) => (
               <div
                 key={tx.id}
                 style={{
@@ -1041,6 +1042,40 @@ export default function Dashboard() {
                 </div>
               </div>
             ))}
+            
+            {filteredTxs.length > 5 && (
+              <button
+                onClick={() => setShowAllTransactions(!showAllTransactions)}
+                style={{
+                  width: '100%',
+                  marginTop: '15px',
+                  padding: '10px',
+                  fontSize: '14px',
+                  backgroundColor: '#f8f9fa',
+                  color: '#495057',
+                  border: '1px solid #dee2e6',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '5px'
+                }}
+              >
+                {showAllTransactions ? (
+                  <>
+                    <span>↑</span>
+                    <span>Show Less</span>
+                  </>
+                ) : (
+                  <>
+                    <span>↓</span>
+                    <span>Show All ({filteredTxs.length} transactions)</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         )}
       </div>
