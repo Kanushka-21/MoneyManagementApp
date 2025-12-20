@@ -6,6 +6,8 @@ import TransactionList from './components/TransactionList.jsx';
 import ConfirmExpense from './components/ConfirmExpense.jsx';
 import ExpenseForm from './components/ExpenseForm.jsx';
 import Profile from './components/Profile.jsx';
+import LiabilityForm from './components/LiabilityForm.jsx';
+import LiabilityList from './components/LiabilityList.jsx';
 
 export default function AppRoutes() {
   return (
@@ -16,6 +18,8 @@ export default function AppRoutes() {
       <Route path='/add' element={<ExpenseForm />} />
       <Route path='/confirm' element={<ConfirmExpense />} />
       <Route path='/profile' element={<Profile />} />
+      <Route path='/liabilities' element={<LiabilityList />} />
+      <Route path='/add-liability' element={<LiabilityForm />} />
     </Routes>
   );
 }

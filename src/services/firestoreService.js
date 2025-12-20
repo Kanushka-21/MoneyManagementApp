@@ -39,3 +39,37 @@ export async function getPrediction() {
   const snap = await getDoc(d);
   return snap.exists() ? snap.data() : null;
 }
+
+// Liability Management Functions
+export async function saveLiability(liability) {
+  const uid = auth.currentUser?.uid;
+  if (!uid) throw new Error('Not authenticated');
+  const ref = await addDoc(collection(db, 'liabilities'), {
+    ...liability,
+    uid,
+    createdAt: serverTimestamp(),
+  });
+  return ref.id;
+}
+
+export async function listLiabilities() {
+  const uid = auth.currentUser?.uid;
+  if (!uid) throw new Error('Not authenticated');
+  const q = query(
+    collection(db, 'liabilities'),
+    where('uid', '==', uid),
+    orderBy('dueDate', 'asc')
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
+
+export async function updateLiability(id, updates) {
+  const d = doc(db, 'liabilities', id);
+  await updateDoc(d, updates);
+}
+
+export async function deleteLiability(id) {
+  const d = doc(db, 'liabilities', id);
+  await deleteDoc(d);
+}

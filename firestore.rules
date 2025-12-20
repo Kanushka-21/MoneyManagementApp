@@ -19,5 +19,15 @@ service cloud.firestore {
       allow read: if request.auth != null && (request.auth.uid == resource.data.uid || request.auth.token.role == 'admin');
       allow create, update: if request.auth != null && request.auth.token.role == 'admin';
     }
+
+    match /liabilities/{liabilityId} {
+      allow create: if request.auth != null && request.resource.data.uid == request.auth.uid;
+      allow read: if request.auth != null && (request.auth.uid == resource.data.uid || request.auth.token.role == 'admin');
+      allow update, delete: if request.auth != null && (request.auth.uid == resource.data.uid || request.auth.token.role == 'admin');
+    }
+
+    match /userSettings/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
   }
 }

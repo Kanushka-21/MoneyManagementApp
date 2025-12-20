@@ -19,6 +19,7 @@ import {
   updateDoc,
   getDocs
 } from 'firebase/firestore';
+import { listLiabilities } from '../services/firestoreService.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ChartDataLabels);
 
@@ -46,6 +47,7 @@ export default function Dashboard() {
   const [editingCategory, setEditingCategory] = useState(null);
   const [editCategoryName, setEditCategoryName] = useState('');
   const [showAllTransactions, setShowAllTransactions] = useState(false);
+  const [liabilities, setLiabilities] = useState([]);
 
   // Listen to auth state changes
   useEffect(() => {
@@ -89,6 +91,25 @@ export default function Dashboard() {
     );
 
     return () => unsubscribe();
+  }, [user]);
+
+  // Load liabilities
+  useEffect(() => {
+    if (!user) {
+      setLiabilities([]);
+      return;
+    }
+
+    async function loadLiabilitiesData() {
+      try {
+        const data = await listLiabilities();
+        setLiabilities(data);
+      } catch (error) {
+        console.error('Error loading liabilities:', error);
+      }
+    }
+
+    loadLiabilitiesData();
   }, [user]);
 
   function showToast(message, type = 'success') {
@@ -1203,6 +1224,147 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Liabilities Section */}
+      {liabilities.length > 0 && (
+        <div style={{
+          backgroundColor: 'white',
+          padding: '15px',
+          borderRadius: '10px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          marginBottom: '15px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+            <h2 style={{ margin: 0, fontSize: '16px', color: '#333' }}>
+              💳 Upcoming Liabilities
+            </h2>
+            <button
+              onClick={() => window.location.href = '/liabilities'}
+              style={{
+                padding: '6px 12px',
+                fontSize: '13px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontWeight: '500'
+              }}
+            >
+              View All
+            </button>
+          </div>
+          
+          {(() => {
+            const today = new Date().setHours(0, 0, 0, 0);
+            const upcomingLiabilities = liabilities
+              .filter(l => !l.isPaid)
+              .map(l => ({
+                ...l,
+                daysUntilDue: Math.ceil((new Date(l.dueDate).setHours(0, 0, 0, 0) - today) / (1000 * 60 * 60 * 24))
+              }))
+              .sort((a, b) => a.daysUntilDue - b.daysUntilDue)
+              .slice(0, 3);
+            
+            const totalPending = liabilities.filter(l => !l.isPaid).reduce((sum, l) => sum + l.amount, 0);
+            
+            return (
+              <>
+                <div style={{
+                  backgroundColor: '#fff3cd',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  marginBottom: '12px',
+                  borderLeft: '4px solid #ffc107'
+                }}>
+                  <div style={{ fontSize: '12px', color: '#856404', marginBottom: '3px' }}>
+                    Total Pending Payments
+                  </div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#856404' }}>
+                    LKR {totalPending.toFixed(2)}
+                  </div>
+                </div>
+                
+                {upcomingLiabilities.length === 0 ? (
+                  <p style={{ color: '#999', textAlign: 'center', padding: '20px', fontSize: '14px' }}>
+                    No pending liabilities! 🎉
+                  </p>
+                ) : (
+                  upcomingLiabilities.map(liability => {
+                    const isOverdue = liability.daysUntilDue < 0;
+                    const isDueSoon = liability.daysUntilDue >= 0 && liability.daysUntilDue <= 7;
+                    
+                    return (
+                      <div
+                        key={liability.id}
+                        style={{
+                          borderLeft: `4px solid ${isOverdue ? '#ff5722' : isDueSoon ? '#FFC107' : '#4CAF50'}`,
+                          padding: '12px',
+                          marginBottom: '10px',
+                          backgroundColor: isOverdue ? '#ffebee' : isDueSoon ? '#fff8e1' : '#f5f5f5',
+                          borderRadius: '8px'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ 
+                              fontSize: '14px', 
+                              fontWeight: '700', 
+                              color: '#222',
+                              marginBottom: '4px'
+                            }}>
+                              {liability.description}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>
+                              {liability.category}
+                            </div>
+                            <div style={{ 
+                              fontSize: '11px', 
+                              color: isOverdue ? '#ff5722' : isDueSoon ? '#f57c00' : '#666',
+                              fontWeight: isOverdue || isDueSoon ? '600' : '400'
+                            }}>
+                              Due: {new Date(liability.dueDate).toLocaleDateString()}
+                              {isOverdue && ` (${Math.abs(liability.daysUntilDue)} days overdue!)`}
+                              {isDueSoon && !isOverdue && ` (${liability.daysUntilDue === 0 ? 'Today' : `${liability.daysUntilDue} days`})`}
+                            </div>
+                          </div>
+                          <div style={{ 
+                            fontSize: '16px', 
+                            fontWeight: 'bold', 
+                            color: isOverdue ? '#ff5722' : '#f44336',
+                            whiteSpace: 'nowrap',
+                            marginLeft: '10px'
+                          }}>
+                            {liability.currency} {liability.amount.toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+                
+                <button
+                  onClick={() => window.location.href = '/add-liability'}
+                  style={{
+                    width: '100%',
+                    marginTop: '10px',
+                    padding: '10px',
+                    fontSize: '14px',
+                    backgroundColor: '#f8f9fa',
+                    color: '#495057',
+                    border: '1px dashed #ced4da',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    fontWeight: '500'
+                  }}
+                >
+                  + Add New Liability
+                </button>
+              </>
+            );
+          })()}
+        </div>
+      )}
 
       {/* Category Breakdown Chart */}
       {categoryBreakdown.length > 0 && (

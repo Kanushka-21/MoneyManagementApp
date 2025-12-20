@@ -7,3 +7,5 @@ export { default as ExpenseForm } from './ExpenseForm.jsx';
 export { default as Login } from './Login.jsx';
 export { default as Navbar } from './Navbar.jsx';
 export { default as Profile } from './Profile.jsx';
+export { default as LiabilityForm } from './LiabilityForm.jsx';
+export { default as LiabilityList } from './LiabilityList.jsx';
