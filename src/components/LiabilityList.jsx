@@ -83,9 +83,9 @@ export default function LiabilityList() {
   return (
     <div style={{ padding: '1rem', maxWidth: 900, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h2 style={{ margin: 0, color: '#333' }}>Liabilities</h2>
+        <h2 style={{ margin: 0, color: '#333' }}>Future Payments</h2>
         <button
-          onClick={() => window.location.href = '/add-liability'}
+          onClick={() => window.location.href = '/add-future-payment'}
           style={{
             padding: '0.5rem 1rem',
             background: '#4CAF50',
@@ -109,7 +109,7 @@ export default function LiabilityList() {
           </div>
         </div>
         <div style={{ background: '#fff', padding: '1rem', borderRadius: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-          <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.3rem' }}>Total Liabilities</div>
+          <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.3rem' }}>Total Payments</div>
           <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#333' }}>
             {liabilities.length}
           </div>
@@ -147,7 +147,7 @@ export default function LiabilityList() {
       {/* Liabilities List */}
       {filteredLiabilities.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '2rem', color: '#999' }}>
-          No liabilities found. Add your first liability to get started!
+          No future payments found. Add your first payment to get started!
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

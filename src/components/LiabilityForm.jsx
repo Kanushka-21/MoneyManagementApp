@@ -48,7 +48,7 @@ export default function LiabilityForm() {
   return (
     <div style={{ padding: '1rem', maxWidth: 500, margin: '0 auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <h2 style={{ margin: 0, color: '#333' }}>Add Liability</h2>
+        <h2 style={{ margin: 0, color: '#333' }}>Add Future Payment</h2>
         <button
           onClick={() => navigate('/liabilities')}
           style={{
@@ -189,7 +189,7 @@ export default function LiabilityForm() {
               transition: 'background 0.2s'
             }}
           >
-            {loading ? 'Saving...' : 'Add Liability'}
+            {loading ? 'Saving...' : 'Add Future Payment'}
           </button>
         </div>
       </form>

@@ -18,8 +18,8 @@ export default function AppRoutes() {
       <Route path='/add' element={<ExpenseForm />} />
       <Route path='/confirm' element={<ConfirmExpense />} />
       <Route path='/profile' element={<Profile />} />
-      <Route path='/liabilities' element={<LiabilityList />} />
-      <Route path='/add-liability' element={<LiabilityForm />} />
+      <Route path='/future-payments' element={<LiabilityList />} />
+      <Route path='/add-future-payment' element={<LiabilityForm />} />
     </Routes>
   );
 }

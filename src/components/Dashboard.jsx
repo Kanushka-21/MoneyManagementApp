@@ -1426,7 +1426,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Liabilities Section */}
+      {/* Future Payments Section */}
       <div style={{
         backgroundColor: 'white',
         padding: '15px',
@@ -1436,10 +1436,10 @@ export default function Dashboard() {
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
           <h2 style={{ margin: 0, fontSize: '16px', color: '#333' }}>
-            💳 Upcoming Liabilities
+            📅 Future Payments
           </h2>
           <button
-            onClick={() => navigate('/liabilities')}
+            onClick={() => navigate('/future-payments')}
             style={{
               padding: '6px 12px',
               fontSize: '13px',
@@ -1544,7 +1544,7 @@ export default function Dashboard() {
                 )}
                 
                 <button
-                  onClick={() => navigate('/add-liability')}
+                  onClick={() => navigate('/add-future-payment')}
                   style={{
                     width: '100%',
                     marginTop: '10px',
@@ -1558,7 +1558,7 @@ export default function Dashboard() {
                     fontWeight: '500'
                   }}
                 >
-                  + Add New Liability
+                  + Add Future Payment
                 </button>
               </>
             );
