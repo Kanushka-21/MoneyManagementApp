@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { saveLiability } from '../services/firestoreService.js';
 
 const LIABILITY_CATEGORIES = [
@@ -14,6 +15,7 @@ const LIABILITY_CATEGORIES = [
 ];
 
 export default function LiabilityForm() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     description: '',
     amount: '',
@@ -33,17 +35,10 @@ export default function LiabilityForm() {
         ...form,
         amount: parseFloat(form.amount)
       });
-      setForm({
-        description: '',
-        amount: '',
-        currency: 'LKR',
-        category: 'Credit Card Payment',
-        dueDate: new Date().toISOString().substring(0, 10),
-        note: '',
-        isPaid: false
-      });
       alert('Liability added successfully!');
+      navigate('/liabilities');
     } catch (err) {
+      console.error('Error adding liability:', err);
       alert('Error: ' + err.message);
     } finally {
       setLoading(false);
@@ -52,7 +47,24 @@ export default function LiabilityForm() {
 
   return (
     <div style={{ padding: '1rem', maxWidth: 500, margin: '0 auto' }}>
-      <h2 style={{ marginBottom: '1.5rem', color: '#333' }}>Add Liability</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <h2 style={{ margin: 0, color: '#333' }}>Add Liability</h2>
+        <button
+          onClick={() => navigate('/liabilities')}
+          style={{
+            padding: '0.5rem 1rem',
+            background: '#6c757d',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            fontSize: '0.9rem',
+            fontWeight: '600',
+            cursor: 'pointer'
+          }}
+        >
+          ← Back
+        </button>
+      </div>
       <form onSubmit={submit} style={{ background: '#fff', padding: '1.5rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         
         <div style={{ marginBottom: '1rem' }}>
@@ -143,24 +155,43 @@ export default function LiabilityForm() {
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            background: loading ? '#ccc' : '#4CAF50',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            fontSize: '1rem',
-            fontWeight: '600',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            transition: 'background 0.2s'
-          }}
-        >
-          {loading ? 'Saving...' : 'Add Liability'}
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            type="button"
+            onClick={() => navigate('/liabilities')}
+            style={{
+              flex: 1,
+              padding: '0.75rem',
+              background: '#6c757d',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              flex: 2,
+              padding: '0.75rem',
+              background: loading ? '#ccc' : '#4CAF50',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              transition: 'background 0.2s'
+            }}
+          >
+            {loading ? 'Saving...' : 'Add Liability'}
+          </button>
+        </div>
       </form>
     </div>
   );
