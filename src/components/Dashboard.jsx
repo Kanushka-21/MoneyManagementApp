@@ -41,7 +41,7 @@ export default function Dashboard() {
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Start with false to show login immediately
   const [showSettings, setShowSettings] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -60,6 +60,7 @@ export default function Dashboard() {
       if (currentUser) {
         await loadUserCategories(currentUser.uid);
       }
+      // Set loading to false immediately so login screen shows faster for new users
       setLoading(false);
     });
     return () => unsubscribe();
