@@ -7,6 +7,12 @@
     "cleartext": true
   },
   "android": {
-    "allowMixedContent": true
+    "allowMixedContent": true,
+    "webContentsDebuggingEnabled": true
+  },
+  "plugins": {
+    "Browser": {
+      "presentationStyle": "popover"
+    }
   }
 }
