@@ -13,6 +13,11 @@
   "plugins": {
     "Browser": {
       "presentationStyle": "popover"
+    },
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "serverClientId": "698654609012-3rtpod17gvkv41c75rkngng24rdf17kv.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": true
     }
   }
 }

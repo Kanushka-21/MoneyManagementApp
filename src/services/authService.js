@@ -3,15 +3,34 @@ import { auth, googleProvider, db } from '../firebase.js';
 import { signInWithCredential, GoogleAuthProvider, onAuthStateChanged, signOut, signInWithPopup } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Capacitor } from '@capacitor/core';
-import { Browser } from '@capacitor/browser';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
+
+// Initialize GoogleAuth for Capacitor
+if (Capacitor.isNativePlatform()) {
+  GoogleAuth.initialize({
+    clientId: '698654609012-3rtpod17gvkv41c75rkngng24rdf17kv.apps.googleusercontent.com',
+    scopes: ['profile', 'email'],
+    grantOfflineAccess: true,
+  });
+}
 
 export async function signInGoogle() {
   try {
-    // Always use popup method - it works in both web and Capacitor webview
-    await signInWithPopup(auth, googleProvider);
+    if (Capacitor.isNativePlatform()) {
+      // Use native Google Sign-In for mobile
+      const googleUser = await GoogleAuth.signIn();
+      
+      // Create Firebase credential from Google token
+      const credential = GoogleAuthProvider.credential(googleUser.authentication.idToken);
+      
+      // Sign in to Firebase with the credential
+      await signInWithCredential(auth, credential);
+    } else {
+      // Use popup for web
+      await signInWithPopup(auth, googleProvider);
+    }
   } catch (error) {
     console.error('Sign-in error:', error);
-    // Provide helpful error messages
     if (error.code === 'auth/popup-blocked') {
       throw new Error('Popup was blocked. Please allow popups for this app.');
     } else if (error.code === 'auth/popup-closed-by-user') {
