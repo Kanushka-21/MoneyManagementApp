@@ -21,7 +21,7 @@ export default function ConfirmExpense() {
         date: new Date(form.date || new Date()).toISOString(),
         source: 'voice'
       });
-      navigate('/transactions');
+      navigate('/');
     } catch (e) { alert(e.message); }
     finally { setLoading(false); }
   }
@@ -29,8 +29,24 @@ export default function ConfirmExpense() {
   if (!transcript) return <div style={{padding:'1rem'}}>No data to confirm.</div>;
 
   return (
-    <div style={{padding:'1rem'}}>
-      <h2>Confirm Expense</h2>
+    <div style={{padding:'1rem',maxWidth:500,margin:'0 auto'}}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h2 style={{ margin: 0 }}>Confirm Expense</h2>
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            padding: '0.5rem 1rem',
+            background: '#6c757d',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: '600'
+          }}
+        >
+          ← Dashboard
+        </button>
+      </div>
       {['amount','currency','category','merchant','date','note'].map(field => (
         <div key={field} style={{marginBottom:'0.5rem'}}>
           <label style={{display:'block',fontSize:'0.75rem',opacity:0.7}}>{field}</label>

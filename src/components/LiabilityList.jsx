@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { listLiabilities, deleteLiability, updateLiability } from '../services/firestoreService.js';
 import LiabilityForm from './LiabilityForm.jsx';
 
 export default function LiabilityList({ onClose, asModal = false }) {
+  const navigate = useNavigate();
   const [liabilities, setLiabilities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, pending, paid, overdue
@@ -135,7 +137,7 @@ export default function LiabilityList({ onClose, asModal = false }) {
           >
             + Add Payment
           </button>
-          {asModal && (
+          {asModal ? (
             <button
               onClick={onClose}
               style={{
@@ -149,6 +151,21 @@ export default function LiabilityList({ onClose, asModal = false }) {
               }}
             >
               Close
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#2196F3',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: '600'
+              }}
+            >
+              ← Dashboard
             </button>
           )}
         </div>

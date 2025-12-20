@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { saveTransaction } from '../services/firestoreService.js';
 import { uploadReceipt } from '../services/storageService.js';
 import { CATEGORIES } from '../utils/categories.js';
 
 export default function ExpenseForm() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({ amount:'', currency:'LKR', category:'Food', merchant:'', date:new Date().toISOString().substring(0,10), note:'' });
   const [file, setFile] = useState(null);
   const [loading,setLoading] = useState(false);
@@ -18,13 +20,31 @@ export default function ExpenseForm() {
       setForm({ amount:'', currency:'LKR', category:'Food', merchant:'', date:new Date().toISOString().substring(0,10), note:'' });
       setFile(null);
       alert('Saved');
+      navigate('/');
     } catch (err) { alert(err.message); }
     finally { setLoading(false); }
   }
 
   return (
-    <form onSubmit={submit} style={{padding:'1rem',maxWidth:400}}>
-      <h2>Manual Expense</h2>
+    <form onSubmit={submit} style={{padding:'1rem',maxWidth:400,margin:'0 auto'}}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h2 style={{ margin: 0 }}>Manual Expense</h2>
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          style={{
+            padding: '0.5rem 1rem',
+            background: '#6c757d',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: '600'
+          }}
+        >
+          ← Dashboard
+        </button>
+      </div>
       {['amount','merchant','note'].map(k => (
         <div key={k} style={{marginBottom:'0.5rem'}}>
           <label style={{display:'block',fontSize:'0.75rem'}}>{k}</label>
