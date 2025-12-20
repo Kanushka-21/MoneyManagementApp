@@ -41,7 +41,6 @@ export default function Dashboard() {
   const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [loading, setLoading] = useState(false); // Start with false to show login immediately
   const [showSettings, setShowSettings] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -60,8 +59,6 @@ export default function Dashboard() {
       if (currentUser) {
         await loadUserCategories(currentUser.uid);
       }
-      // Set loading to false immediately so login screen shows faster for new users
-      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
@@ -70,7 +67,6 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) {
       setTransactions([]);
-      setLoading(false); // Ensure loading is false when logged out
       return;
     }
 
@@ -87,12 +83,10 @@ export default function Dashboard() {
           ...doc.data()
         }));
         setTransactions(txs);
-        setLoading(false);
       },
       (error) => {
         console.error('Error loading transactions:', error);
         showToast('Error loading transactions: ' + error.message, 'error');
-        setLoading(false);
       }
     );
 
@@ -163,12 +157,10 @@ export default function Dashboard() {
 
   async function handleLogin() {
     try {
-      setLoading(true);
       await signInWithPopup(auth, googleProvider);
     } catch (error) {
       console.error('Login error:', error);
       showToast('Login failed: ' + error.message, 'error');
-      setLoading(false);
     }
   }
 
@@ -440,62 +432,7 @@ export default function Dashboard() {
     }
   };
 
-  // Show loading screen first
-  if (loading) {
-    return (
-      <div style={{ 
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '100vh',
-        backgroundColor: '#f5f5f5'
-      }}>
-        <div style={{
-          width: '80px',
-          height: '80px',
-          backgroundColor: '#4CAF50',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '48px',
-          marginBottom: '20px',
-          animation: 'pulse 2s ease-in-out infinite'
-        }}>
-          💰
-        </div>
-        <h2 style={{ 
-          margin: '0 0 10px 0', 
-          fontSize: '24px', 
-          color: '#333',
-          fontWeight: '600'
-        }}>
-          Money Manager
-        </h2>
-        <div style={{
-          width: '40px',
-          height: '40px',
-          border: '4px solid #f3f3f3',
-          borderTop: '4px solid #4CAF50',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite'
-        }}></div>
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-          }
-        `}</style>
-      </div>
-    );
-  }
-
-  // Show login page only after loading is complete and user is not authenticated
+  // Show login page if user is not authenticated (removed loading screen to prevent getting stuck)
   if (!user) {
     return (
       <div style={{ 
