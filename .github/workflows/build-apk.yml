@@ -20,6 +20,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '20'
+          cache: 'npm'
           
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -32,6 +33,15 @@ jobs:
         
       - name: Build web app
         run: npm run build
+        env:
+          NODE_ENV: production
+        
+      - name: Verify build output
+        run: |
+          echo "Checking dist folder..."
+          ls -la dist/ || echo "dist folder not found!"
+          echo "Checking index.html..."
+          ls -la dist/index.html || echo "index.html not found!"
         
       - name: Sync Capacitor
         run: npx cap sync android
@@ -40,7 +50,7 @@ jobs:
         run: chmod +x android/gradlew
         
       - name: Build Android APK
-        run: cd android && ./gradlew assembleDebug --stacktrace
+        run: cd android && ./gradlew assembleDebug --stacktrace --info
           
       - name: Upload APK as Artifact
         uses: actions/upload-artifact@v4
