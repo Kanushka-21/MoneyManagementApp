@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { listLiabilities, deleteLiability, updateLiability } from '../services/firestoreService.js';
+import LiabilityForm from './LiabilityForm.jsx';
 
-export default function LiabilityList() {
+export default function LiabilityList({ onClose, asModal = false }) {
   const [liabilities, setLiabilities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // all, pending, paid, overdue
+  const [showAddForm, setShowAddForm] = useState(false);
 
   async function loadLiabilities() {
     setLoading(true);
@@ -80,24 +82,76 @@ export default function LiabilityList() {
     return <div style={{ padding: '1rem' }}>Loading liabilities...</div>;
   }
 
+  const containerStyle = asModal ? {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    padding: '1rem'
+  } : {};
+
+  const contentStyle = asModal ? {
+    background: '#f5f5f5',
+    borderRadius: '12px',
+    maxWidth: '900px',
+    width: '100%',
+    maxHeight: '90vh',
+    overflow: 'auto',
+    padding: '1.5rem',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+  } : {
+    padding: '1rem',
+    maxWidth: 900,
+    margin: '0 auto'
+  };
+
+  if (showAddForm) {
+    return <LiabilityForm onClose={() => { setShowAddForm(false); loadLiabilities(); }} asModal={true} />;
+  }
+
   return (
-    <div style={{ padding: '1rem', maxWidth: 900, margin: '0 auto' }}>
+    <div style={containerStyle} onClick={asModal ? onClose : undefined}>
+      <div style={contentStyle} onClick={e => e.stopPropagation()}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2 style={{ margin: 0, color: '#333' }}>Future Payments</h2>
-        <button
-          onClick={() => window.location.href = '/add-future-payment'}
-          style={{
-            padding: '0.5rem 1rem',
-            background: '#4CAF50',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontWeight: '600'
-          }}
-        >
-          + Add Liability
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button
+            onClick={() => setShowAddForm(true)}
+            style={{
+              padding: '0.5rem 1rem',
+              background: '#4CAF50',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontWeight: '600'
+            }}
+          >
+            + Add Payment
+          </button>
+          {asModal && (
+            <button
+              onClick={onClose}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#6c757d',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: '600'
+              }}
+            >
+              Close
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -261,6 +315,7 @@ export default function LiabilityList() {
           })}
         </div>
       )}
+      </div>
     </div>
   );
 }

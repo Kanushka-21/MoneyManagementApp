@@ -21,6 +21,7 @@ import {
   getDocs
 } from 'firebase/firestore';
 import { listLiabilities } from '../services/firestoreService.js';
+import LiabilityList from './LiabilityList.jsx';
 
 ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale, ChartDataLabels);
 
@@ -51,6 +52,7 @@ export default function Dashboard() {
   const [liabilities, setLiabilities] = useState([]);
   const [showTransactionPopup, setShowTransactionPopup] = useState(null);
   const [showPeriodPopup, setShowPeriodPopup] = useState(false);
+  const [showLiabilitiesModal, setShowLiabilitiesModal] = useState(false);
 
   // Listen to auth state changes
   useEffect(() => {
@@ -1461,7 +1463,7 @@ export default function Dashboard() {
             📅 Future Payments
           </h2>
           <button
-            onClick={() => navigate('/future-payments')}
+            onClick={() => setShowLiabilitiesModal(true)}
             style={{
               padding: '6px 12px',
               fontSize: '13px',
@@ -2090,6 +2092,14 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Future Payments Modal */}
+      {showLiabilitiesModal && (
+        <LiabilityList 
+          onClose={() => setShowLiabilitiesModal(false)} 
+          asModal={true} 
+        />
       )}
     </div>
   );

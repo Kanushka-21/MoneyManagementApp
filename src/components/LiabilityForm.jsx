@@ -14,7 +14,7 @@ const LIABILITY_CATEGORIES = [
   'Other'
 ];
 
-export default function LiabilityForm() {
+export default function LiabilityForm({ onClose, asModal = false }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({
     description: '',
@@ -36,7 +36,11 @@ export default function LiabilityForm() {
         amount: parseFloat(form.amount)
       });
       alert('Future payment added successfully!');
-      navigate('/future-payments');
+      if (asModal && onClose) {
+        onClose();
+      } else {
+        navigate('/future-payments');
+      }
     } catch (err) {
       console.error('Error adding future payment:', err);
       alert('Error: ' + err.message);
@@ -45,12 +49,47 @@ export default function LiabilityForm() {
     }
   }
 
+  const containerStyle = asModal ? {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    padding: '1rem'
+  } : {};
+
+  const contentStyle = asModal ? {
+    background: '#f5f5f5',
+    borderRadius: '12px',
+    maxWidth: '550px',
+    width: '100%',
+    maxHeight: '90vh',
+    overflow: 'auto',
+    padding: '1.5rem'
+  } : {
+    padding: '1rem',
+    maxWidth: 500,
+    margin: '0 auto'
+  };
+
   return (
-    <div style={{ padding: '1rem', maxWidth: 500, margin: '0 auto' }}>
+    <div style={containerStyle} onClick={asModal ? onClose : undefined}>
+      <div style={contentStyle} onClick={e => e.stopPropagation()}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h2 style={{ margin: 0, color: '#333' }}>Add Future Payment</h2>
         <button
-          onClick={() => navigate('/future-payments')}
+          onClick={() => {
+            if (asModal && onClose) {
+              onClose();
+            } else {
+              navigate('/future-payments');
+            }
+          }}
           style={{
             padding: '0.5rem 1rem',
             background: '#6c757d',
@@ -188,7 +227,13 @@ export default function LiabilityForm() {
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button
             type="button"
-            onClick={() => navigate('/liabilities')}
+            onClick={() => {
+              if (asModal && onClose) {
+                onClose();
+              } else {
+                navigate('/liabilities');
+              }
+            }}
             style={{
               flex: 1,
               padding: '0.75rem',
@@ -223,6 +268,7 @@ export default function LiabilityForm() {
           </button>
         </div>
       </form>
+      </div>
     </div>
   );
 }
