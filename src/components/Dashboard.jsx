@@ -48,6 +48,7 @@ export default function Dashboard() {
   const [editCategoryName, setEditCategoryName] = useState('');
   const [showAllTransactions, setShowAllTransactions] = useState(false);
   const [liabilities, setLiabilities] = useState([]);
+  const [showTransactionPopup, setShowTransactionPopup] = useState(null);
 
   // Listen to auth state changes
   useEffect(() => {
@@ -740,17 +741,27 @@ export default function Dashboard() {
         </div>
         
         <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '15px', paddingTop: '15px', borderTop: '1px solid rgba(255,255,255,0.3)' }}>
-          <div>
+          <div 
+            onClick={() => setShowTransactionPopup('income')}
+            style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
             <div style={{ fontSize: '11px', color: '#fff', opacity: 0.8, marginBottom: '3px' }}>
-              Income
+              Income 👆
             </div>
             <div style={{ fontSize: '18px', fontWeight: '600', color: '#fff' }}>
               +{totalIncome.toFixed(2)}
             </div>
           </div>
-          <div>
+          <div 
+            onClick={() => setShowTransactionPopup('expense')}
+            style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
             <div style={{ fontSize: '11px', color: '#fff', opacity: 0.8, marginBottom: '3px' }}>
-              Expenses
+              Expenses 👆
             </div>
             <div style={{ fontSize: '18px', fontWeight: '600', color: '#fff' }}>
               -{totalExpenses.toFixed(2)}
@@ -860,6 +871,131 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Transaction Type Popup */}
+      {showTransactionPopup && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}
+          onClick={() => setShowTransactionPopup(null)}
+        >
+          <div 
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '20px',
+              maxWidth: '400px',
+              width: '100%',
+              maxHeight: '70vh',
+              overflow: 'auto',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', color: '#333' }}>
+                {showTransactionPopup === 'income' ? '💵 Income Details' : '💸 Expense Details'}
+              </h3>
+              <button
+                onClick={() => setShowTransactionPopup(null)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  color: '#666',
+                  padding: '0',
+                  lineHeight: '1'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{
+              backgroundColor: showTransactionPopup === 'income' ? '#e8f5e9' : '#ffebee',
+              padding: '12px',
+              borderRadius: '8px',
+              marginBottom: '15px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>
+                Total {showTransactionPopup === 'income' ? 'Income' : 'Expenses'}
+              </div>
+              <div style={{ 
+                fontSize: '24px', 
+                fontWeight: 'bold', 
+                color: showTransactionPopup === 'income' ? '#2e7d32' : '#c62828' 
+              }}>
+                LKR {(showTransactionPopup === 'income' ? totalIncome : totalExpenses).toFixed(2)}
+              </div>
+            </div>
+
+            {(() => {
+              const filteredTransactions = filteredTxs.filter(tx => tx.type === showTransactionPopup);
+              
+              if (filteredTransactions.length === 0) {
+                return (
+                  <div style={{ textAlign: 'center', padding: '30px', color: '#999', fontSize: '14px' }}>
+                    No {showTransactionPopup} transactions found
+                  </div>
+                );
+              }
+
+              return (
+                <div>
+                  {filteredTransactions.map(tx => (
+                    <div
+                      key={tx.id}
+                      style={{
+                        borderBottom: '1px solid #f0f0f0',
+                        padding: '12px 0',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#333', marginBottom: '4px' }}>
+                          {tx.category}
+                        </div>
+                        {tx.note && (
+                          <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>
+                            {tx.note}
+                          </div>
+                        )}
+                        <div style={{ fontSize: '11px', color: '#999' }}>
+                          {new Date(tx.date).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div style={{ 
+                        fontSize: '16px', 
+                        fontWeight: 'bold', 
+                        color: showTransactionPopup === 'income' ? '#2e7d32' : '#c62828',
+                        whiteSpace: 'nowrap',
+                        marginLeft: '10px'
+                      }}>
+                        {showTransactionPopup === 'income' ? '+' : '-'}LKR {tx.amount.toFixed(2)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
 
       {/* Pie Chart */}
       {categoryPercentages.length > 0 && (
