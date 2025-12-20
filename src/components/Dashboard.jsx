@@ -70,6 +70,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) {
       setTransactions([]);
+      setLoading(false); // Ensure loading is false when logged out
       return;
     }
 
