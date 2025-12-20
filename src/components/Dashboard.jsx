@@ -759,7 +759,7 @@ export default function Dashboard() {
         </div>
         
         <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.3)' }}>
-          <div style={{ fontSize: '11px', color: '#fff', opacity: 0.8, marginBottom: '3px' }}>
+          <div style={{ fontSize: '14px', color: '#fff', opacity: 0.9, marginBottom: '3px', fontWeight: '500' }}>
             Today: Income +{todayIncome.toFixed(2)} | Expenses -{todayExpenses.toFixed(2)}
           </div>
         </div>
