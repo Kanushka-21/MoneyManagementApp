@@ -34,14 +34,16 @@ async function ensureUserDoc(user) {
 export function useAuthInit() {
   const [, setUser] = useState(null);
   useEffect(() => {
-    // Handle redirect result for mobile
-    getRedirectResult(auth).then(async (result) => {
-      if (result?.user) {
-        await ensureUserDoc(result.user);
-      }
-    }).catch((error) => {
-      console.error('Redirect sign-in error:', error);
-    });
+    // Handle redirect result for mobile only
+    if (Capacitor.isNativePlatform()) {
+      getRedirectResult(auth).then(async (result) => {
+        if (result?.user) {
+          await ensureUserDoc(result.user);
+        }
+      }).catch((error) => {
+        console.error('Redirect sign-in error:', error);
+      });
+    }
 
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
