@@ -1,5 +1,5 @@
 import React from 'react';
-import Dashboard from './components/Dashboard.jsx';
+import AppRoutes from './routes.jsx';
 import { useAuthInit } from './services/authService.js';
 
 export default function App() {
@@ -10,7 +10,7 @@ export default function App() {
       backgroundColor: '#f5f5f5',
       fontFamily: 'Arial, sans-serif'
     }}>
-      <Dashboard />
+      <AppRoutes />
     </div>
   );
 }
