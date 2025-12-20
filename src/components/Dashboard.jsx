@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
@@ -26,6 +27,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearS
 const DEFAULT_CATEGORIES = ['Food', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Other'];
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
@@ -1374,7 +1376,7 @@ export default function Dashboard() {
             💳 Upcoming Liabilities
           </h2>
           <button
-            onClick={() => window.location.href = '/liabilities'}
+            onClick={() => navigate('/liabilities')}
             style={{
               padding: '6px 12px',
               fontSize: '13px',
@@ -1479,7 +1481,7 @@ export default function Dashboard() {
                 )}
                 
                 <button
-                  onClick={() => window.location.href = '/add-liability'}
+                  onClick={() => navigate('/add-liability')}
                   style={{
                     width: '100%',
                     marginTop: '10px',
