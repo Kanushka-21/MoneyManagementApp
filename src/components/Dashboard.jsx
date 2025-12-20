@@ -1362,34 +1362,33 @@ export default function Dashboard() {
       </div>
 
       {/* Liabilities Section */}
-      {liabilities.length > 0 && (
-        <div style={{
-          backgroundColor: 'white',
-          padding: '15px',
-          borderRadius: '10px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-          marginBottom: '15px'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-            <h2 style={{ margin: 0, fontSize: '16px', color: '#333' }}>
-              💳 Upcoming Liabilities
-            </h2>
-            <button
-              onClick={() => window.location.href = '/liabilities'}
-              style={{
-                padding: '6px 12px',
-                fontSize: '13px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontWeight: '500'
-              }}
-            >
-              View All
-            </button>
-          </div>
+      <div style={{
+        backgroundColor: 'white',
+        padding: '15px',
+        borderRadius: '10px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        marginBottom: '15px'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+          <h2 style={{ margin: 0, fontSize: '16px', color: '#333' }}>
+            💳 Upcoming Liabilities
+          </h2>
+          <button
+            onClick={() => window.location.href = '/liabilities'}
+            style={{
+              padding: '6px 12px',
+              fontSize: '13px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px',
+              cursor: 'pointer',
+              fontWeight: '500'
+            }}
+          >
+            View All
+          </button>
+        </div>
           
           {(() => {
             const today = new Date().setHours(0, 0, 0, 0);
@@ -1499,8 +1498,7 @@ export default function Dashboard() {
               </>
             );
           })()}
-        </div>
-      )}
+      </div>
 
       {/* Category Breakdown Chart */}
       {categoryBreakdown.length > 0 && (
