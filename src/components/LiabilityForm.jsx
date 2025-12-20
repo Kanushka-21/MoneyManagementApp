@@ -35,10 +35,10 @@ export default function LiabilityForm() {
         ...form,
         amount: parseFloat(form.amount)
       });
-      alert('Liability added successfully!');
-      navigate('/liabilities');
+      alert('Future payment added successfully!');
+      navigate('/future-payments');
     } catch (err) {
-      console.error('Error adding liability:', err);
+      console.error('Error adding future payment:', err);
       alert('Error: ' + err.message);
     } finally {
       setLoading(false);
@@ -50,7 +50,7 @@ export default function LiabilityForm() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h2 style={{ margin: 0, color: '#333' }}>Add Future Payment</h2>
         <button
-          onClick={() => navigate('/liabilities')}
+          onClick={() => navigate('/future-payments')}
           style={{
             padding: '0.5rem 1rem',
             background: '#6c757d',

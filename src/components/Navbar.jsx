@@ -10,7 +10,7 @@ export default function Navbar() {
       <Link to='/' style={{color:'#fff'}}>Dashboard</Link>
       <Link to='/add' style={{color:'#fff'}}>Add</Link>
       <Link to='/transactions' style={{color:'#fff'}}>Transactions</Link>
-      <Link to='/liabilities' style={{color:'#fff'}}>Liabilities</Link>
+      <Link to='/future-payments' style={{color:'#fff'}}>Future Payments</Link>
       <span style={{marginLeft:'auto'}}>
         {user ? (
           <>
