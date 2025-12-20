@@ -82,18 +82,48 @@ export default function LiabilityForm() {
         </div>
 
         <div style={{ marginBottom: '1rem' }}>
-          <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.3rem', color: '#555' }}>
+          <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', marginBottom: '0.5rem', color: '#555' }}>
             Category *
           </label>
-          <select
-            value={form.category}
-            onChange={e => setForm({ ...form, category: e.target.value })}
-            style={{ width: '100%', padding: '0.5rem', border: '1px solid #ddd', borderRadius: '4px', fontSize: '0.95rem' }}
-          >
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', 
+            gap: '10px'
+          }}>
             {LIABILITY_CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
+              <div
+                key={cat}
+                onClick={() => setForm({ ...form, category: cat })}
+                style={{
+                  padding: '12px',
+                  border: form.category === cat ? '2px solid #4CAF50' : '1px solid #ddd',
+                  borderRadius: '8px',
+                  textAlign: 'center',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  fontWeight: form.category === cat ? '600' : '500',
+                  backgroundColor: form.category === cat ? '#f0f9f4' : 'white',
+                  color: form.category === cat ? '#2d7a4d' : '#555',
+                  transition: 'all 0.2s ease',
+                  userSelect: 'none'
+                }}
+                onMouseEnter={e => {
+                  if (form.category !== cat) {
+                    e.currentTarget.style.borderColor = '#aaa';
+                    e.currentTarget.style.backgroundColor = '#f8f9fa';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (form.category !== cat) {
+                    e.currentTarget.style.borderColor = '#ddd';
+                    e.currentTarget.style.backgroundColor = 'white';
+                  }
+                }}
+              >
+                {cat}
+              </div>
             ))}
-          </select>
+          </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem', marginBottom: '1rem' }}>

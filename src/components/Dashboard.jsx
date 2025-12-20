@@ -1150,29 +1150,51 @@ export default function Dashboard() {
           </div>
 
           <div style={{ marginBottom: '12px' }}>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '14px',
-                fontSize: '16px',
-                border: '2px solid #e0e0e0',
-                borderRadius: '10px',
-                boxSizing: 'border-box',
-                backgroundColor: 'white',
-                color: '#2c3e50',
-                fontWeight: '500',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                transition: 'all 0.2s ease'
-              }}
-              required
-            >
-              <option value="" style={{ color: '#999' }}>Select Category</option>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#2c3e50', marginBottom: '6px' }}>
+              Category *
+            </label>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(90px, 1fr))', 
+              gap: '8px',
+              maxHeight: '180px',
+              overflowY: 'auto',
+              padding: '2px'
+            }}>
               {categories.map(cat => (
-                <option key={cat} value={cat} style={{ padding: '10px', color: '#2c3e50' }}>{cat}</option>
+                <div
+                  key={cat}
+                  onClick={() => setCategory(cat)}
+                  style={{
+                    padding: '8px',
+                    border: category === cat ? '2px solid #4CAF50' : '1px solid #ddd',
+                    borderRadius: '6px',
+                    textAlign: 'center',
+                    cursor: 'pointer',
+                    fontSize: '0.75rem',
+                    fontWeight: category === cat ? '600' : '500',
+                    backgroundColor: category === cat ? '#f0f9f4' : 'white',
+                    color: category === cat ? '#2d7a4d' : '#555',
+                    transition: 'all 0.15s ease',
+                    userSelect: 'none'
+                  }}
+                  onMouseEnter={e => {
+                    if (category !== cat) {
+                      e.currentTarget.style.borderColor = '#aaa';
+                      e.currentTarget.style.backgroundColor = '#f8f9fa';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (category !== cat) {
+                      e.currentTarget.style.borderColor = '#ddd';
+                      e.currentTarget.style.backgroundColor = 'white';
+                    }
+                  }}
+                >
+                  {cat}
+                </div>
               ))}
-            </select>
+            </div>
           </div>
 
           <div style={{ marginBottom: '12px' }}>

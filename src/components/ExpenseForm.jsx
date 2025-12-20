@@ -31,11 +31,47 @@ export default function ExpenseForm() {
           <input required={k==='amount'} value={form[k]} onChange={e=>setForm({...form,[k]:e.target.value})} />
         </div>
       ))}
-      <div style={{marginBottom:'0.5rem'}}>
-        <label style={{display:'block',fontSize:'0.75rem'}}>category</label>
-        <select value={form.category} onChange={e=>setForm({...form,category:e.target.value})}>
-          {CATEGORIES.map(c => <option key={c}>{c}</option>)}
-        </select>
+      <div style={{marginBottom:'1rem'}}>
+        <label style={{display:'block',fontSize:'0.85rem',fontWeight:'600',marginBottom:'0.5rem',color:'#555'}}>Category</label>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', 
+          gap: '8px'
+        }}>
+          {CATEGORIES.map(c => (
+            <div
+              key={c}
+              onClick={() => setForm({...form, category: c})}
+              style={{
+                padding: '10px',
+                border: form.category === c ? '2px solid #4CAF50' : '1px solid #ddd',
+                borderRadius: '8px',
+                textAlign: 'center',
+                cursor: 'pointer',
+                fontSize: '0.8rem',
+                fontWeight: form.category === c ? '600' : '500',
+                backgroundColor: form.category === c ? '#f0f9f4' : 'white',
+                color: form.category === c ? '#2d7a4d' : '#555',
+                transition: 'all 0.2s ease',
+                userSelect: 'none'
+              }}
+              onMouseEnter={e => {
+                if (form.category !== c) {
+                  e.currentTarget.style.borderColor = '#aaa';
+                  e.currentTarget.style.backgroundColor = '#f8f9fa';
+                }
+              }}
+              onMouseLeave={e => {
+                if (form.category !== c) {
+                  e.currentTarget.style.borderColor = '#ddd';
+                  e.currentTarget.style.backgroundColor = 'white';
+                }
+              }}
+            >
+              {c}
+            </div>
+          ))}
+        </div>
       </div>
       <div style={{marginBottom:'0.5rem'}}>
         <label style={{display:'block',fontSize:'0.75rem'}}>date</label>
