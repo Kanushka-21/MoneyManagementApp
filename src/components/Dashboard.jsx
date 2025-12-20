@@ -356,6 +356,24 @@ export default function Dashboard() {
     percentage: totalExpenses > 0 ? ((amt / totalExpenses) * 100).toFixed(1) : 0
   })).sort((a, b) => b.amount - a.amount);
 
+  // Daily breakdown
+  const dailyBreakdown = filteredTxs.reduce((acc, tx) => {
+    const date = tx.date;
+    if (!acc[date]) {
+      acc[date] = { date, income: 0, expense: 0, transactions: [] };
+    }
+    if (tx.type === 'income') {
+      acc[date].income += tx.amount;
+    } else {
+      acc[date].expense += tx.amount;
+    }
+    acc[date].transactions.push(tx);
+    return acc;
+  }, {});
+
+  const dailyBreakdownArray = Object.values(dailyBreakdown)
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+
   // Pie chart data
   const pieColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0'];
   const pieData = {
@@ -1291,6 +1309,90 @@ export default function Dashboard() {
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Daily Breakdown */}
+      {dailyBreakdownArray.length > 0 && (
+        <div style={{
+          backgroundColor: 'white',
+          padding: '15px',
+          borderRadius: '10px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          marginBottom: '15px'
+        }}>
+          <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#333' }}>
+            📅 Daily Breakdown
+          </h3>
+          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            {dailyBreakdownArray.map((day, idx) => {
+              const dayDate = new Date(day.date);
+              const dayName = dayDate.toLocaleDateString('en-US', { weekday: 'short' });
+              const dateStr = dayDate.toLocaleDateString('en-CA');
+              const netAmount = day.income - day.expense;
+              
+              return (
+                <div
+                  key={day.date}
+                  style={{
+                    padding: '12px',
+                    backgroundColor: idx % 2 === 0 ? '#f8f9fa' : 'white',
+                    borderRadius: '6px',
+                    marginBottom: '8px',
+                    border: '1px solid #e9ecef'
+                  }}
+                >
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '6px'
+                  }}>
+                    <div>
+                      <span style={{ fontWeight: '600', fontSize: '14px', color: '#333' }}>
+                        {dayName}, {dateStr}
+                      </span>
+                      <span style={{ 
+                        marginLeft: '8px', 
+                        fontSize: '12px', 
+                        color: '#6c757d',
+                        backgroundColor: '#e9ecef',
+                        padding: '2px 6px',
+                        borderRadius: '4px'
+                      }}>
+                        {day.transactions.length} transaction{day.transactions.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <div style={{
+                      fontWeight: '700',
+                      fontSize: '15px',
+                      color: netAmount >= 0 ? '#28a745' : '#dc3545'
+                    }}>
+                      {netAmount >= 0 ? '+' : ''}{netAmount.toFixed(2)}
+                    </div>
+                  </div>
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '15px', 
+                    fontSize: '13px',
+                    paddingTop: '6px',
+                    borderTop: '1px solid #e9ecef'
+                  }}>
+                    {day.income > 0 && (
+                      <span style={{ color: '#28a745' }}>
+                        Income: <strong>+{day.income.toFixed(2)}</strong>
+                      </span>
+                    )}
+                    {day.expense > 0 && (
+                      <span style={{ color: '#dc3545' }}>
+                        Expenses: <strong>-{day.expense.toFixed(2)}</strong>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
