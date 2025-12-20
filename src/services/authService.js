@@ -1,15 +1,23 @@
 import { useEffect, useState } from 'react';
 import { auth, googleProvider, db } from '../firebase.js';
-import { signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from 'firebase/auth';
+import { signInWithCredential, GoogleAuthProvider, onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 
 export async function signInGoogle() {
-  // Use redirect for mobile, popup for web
+  // For mobile, use Browser plugin with custom redirect
   if (Capacitor.isNativePlatform()) {
-    await signInWithRedirect(auth, googleProvider);
+    try {
+      // For now, fall back to web-based auth in app browser
+      const { signInWithPopup } = await import('firebase/auth');
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error('Mobile sign-in error:', error);
+      throw error;
+    }
   } else {
-    // Dynamic import to avoid bundling issues
+    // Use popup for web
     const { signInWithPopup } = await import('firebase/auth');
     await signInWithPopup(auth, googleProvider);
   }
@@ -34,17 +42,6 @@ async function ensureUserDoc(user) {
 export function useAuthInit() {
   const [, setUser] = useState(null);
   useEffect(() => {
-    // Handle redirect result for mobile only
-    if (Capacitor.isNativePlatform()) {
-      getRedirectResult(auth).then(async (result) => {
-        if (result?.user) {
-          await ensureUserDoc(result.user);
-        }
-      }).catch((error) => {
-        console.error('Redirect sign-in error:', error);
-      });
-    }
-
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       await ensureUserDoc(u);
