@@ -2036,6 +2036,23 @@ export default function Dashboard() {
             width: '100%',
             boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
           }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '5px' }}>
+              <button
+                onClick={() => handleConfirmClose(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  color: '#999',
+                  padding: '0',
+                  lineHeight: '1'
+                }}
+                title="Close"
+              >
+                ×
+              </button>
+            </div>
             <div style={{
               fontSize: '20px',
               marginBottom: '8px',

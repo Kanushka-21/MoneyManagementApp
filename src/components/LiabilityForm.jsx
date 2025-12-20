@@ -91,17 +91,19 @@ export default function LiabilityForm({ onClose, asModal = false }) {
             }
           }}
           style={{
-            padding: '0.5rem 1rem',
-            background: '#6c757d',
-            color: '#fff',
+            padding: '0.3rem',
+            background: 'transparent',
+            color: '#666',
             border: 'none',
             borderRadius: '4px',
-            fontSize: '0.9rem',
-            fontWeight: '600',
+            fontSize: asModal ? '28px' : '0.9rem',
+            lineHeight: '1',
+            fontWeight: asModal ? '300' : '600',
             cursor: 'pointer'
           }}
+          title={asModal ? 'Close' : 'Back'}
         >
-          ← Back
+          {asModal ? '✕' : '← Back'}
         </button>
       </div>
       <form onSubmit={submit} style={{ background: '#fff', padding: '1.5rem', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>

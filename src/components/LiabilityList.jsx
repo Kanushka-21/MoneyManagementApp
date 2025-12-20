@@ -141,16 +141,19 @@ export default function LiabilityList({ onClose, asModal = false }) {
             <button
               onClick={onClose}
               style={{
-                padding: '0.5rem 1rem',
-                background: '#6c757d',
-                color: '#fff',
+                padding: '0.3rem',
+                background: 'transparent',
+                color: '#666',
                 border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer',
-                fontWeight: '600'
+                fontSize: '28px',
+                lineHeight: '1',
+                fontWeight: '300'
               }}
+              title="Close"
             >
-              Close
+              ✕
             </button>
           ) : (
             <button
