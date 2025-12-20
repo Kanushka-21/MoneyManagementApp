@@ -51,6 +51,7 @@ export default function Dashboard() {
   const [showAllTransactions, setShowAllTransactions] = useState(false);
   const [liabilities, setLiabilities] = useState([]);
   const [showTransactionPopup, setShowTransactionPopup] = useState(null);
+  const [showPeriodPopup, setShowPeriodPopup] = useState(false);
 
   // Listen to auth state changes
   useEffect(() => {
@@ -777,16 +778,8 @@ export default function Dashboard() {
           </div>
         </div>
         <div style={{ marginTop: '10px' }}>
-          <select
-            value={period}
-            onChange={(e) => {
-              setPeriod(e.target.value);
-              if (e.target.value === 'custom' && !startDate) {
-                // Set default start date to beginning of current month
-                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-                setStartDate(firstDay.toISOString().split('T')[0]);
-              }
-            }}
+          <button
+            onClick={() => setShowPeriodPopup(true)}
             style={{
               padding: '8px 12px',
               fontSize: '13px',
@@ -797,13 +790,14 @@ export default function Dashboard() {
               cursor: 'pointer',
               fontWeight: '500',
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              transition: 'all 0.2s ease'
+              transition: 'all 0.2s ease',
+              width: '100%'
             }}
           >
-            <option value="month" style={{ padding: '8px' }}>This Month</option>
-            <option value="year" style={{ padding: '8px' }}>This Year</option>
-            <option value="custom" style={{ padding: '8px' }}>Custom Range</option>
-          </select>
+            {period === 'month' && 'This Month'}
+            {period === 'year' && 'This Year'}
+            {period === 'custom' && 'Custom Range'} 📅
+          </button>
 
           {/* Date Range Display */}
           <div style={{ 
@@ -955,11 +949,25 @@ export default function Dashboard() {
                 );
               }
 
+              // Group by category and sum amounts
+              const categoryTotals = filteredTransactions.reduce((acc, tx) => {
+                if (!acc[tx.category]) {
+                  acc[tx.category] = 0;
+                }
+                acc[tx.category] += tx.amount;
+                return acc;
+              }, {});
+
+              // Convert to array and sort by amount
+              const sortedCategories = Object.entries(categoryTotals)
+                .map(([category, amount]) => ({ category, amount }))
+                .sort((a, b) => b.amount - a.amount);
+
               return (
                 <div>
-                  {filteredTransactions.map(tx => (
+                  {sortedCategories.map(({ category, amount }) => (
                     <div
-                      key={tx.id}
+                      key={category}
                       style={{
                         borderBottom: '1px solid #f0f0f0',
                         padding: '12px 0',
@@ -969,16 +977,8 @@ export default function Dashboard() {
                       }}
                     >
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#333', marginBottom: '4px' }}>
-                          {tx.category}
-                        </div>
-                        {tx.note && (
-                          <div style={{ fontSize: '12px', color: '#666', marginBottom: '4px' }}>
-                            {tx.note}
-                          </div>
-                        )}
-                        <div style={{ fontSize: '11px', color: '#999' }}>
-                          {new Date(tx.date).toLocaleDateString()}
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#333' }}>
+                          {category}
                         </div>
                       </div>
                       <div style={{ 
@@ -988,13 +988,192 @@ export default function Dashboard() {
                         whiteSpace: 'nowrap',
                         marginLeft: '10px'
                       }}>
-                        {showTransactionPopup === 'income' ? '+' : '-'}LKR {tx.amount.toFixed(2)}
+                        {showTransactionPopup === 'income' ? '+' : '-'}LKR {amount.toFixed(2)}
                       </div>
                     </div>
                   ))}
                 </div>
               );
             })()}
+          </div>
+        </div>
+      )}
+
+      {/* Period Selection Popup */}
+      {showPeriodPopup && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+            padding: '20px'
+          }}
+          onClick={() => setShowPeriodPopup(false)}
+        >
+          <div 
+            style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '20px',
+              maxWidth: '400px',
+              width: '100%',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', color: '#333' }}>
+                📅 Select Period
+              </h3>
+              <button
+                onClick={() => setShowPeriodPopup(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  color: '#666',
+                  padding: '0',
+                  lineHeight: '1'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                onClick={() => {
+                  setPeriod('month');
+                  setShowPeriodPopup(false);
+                }}
+                style={{
+                  padding: '15px',
+                  fontSize: '15px',
+                  backgroundColor: period === 'month' ? '#4CAF50' : '#f8f9fa',
+                  color: period === 'month' ? 'white' : '#333',
+                  border: period === 'month' ? 'none' : '1px solid #dee2e6',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                  textAlign: 'left',
+                  transition: 'all 0.2s'
+                }}
+              >
+                📆 This Month
+              </button>
+
+              <button
+                onClick={() => {
+                  setPeriod('year');
+                  setShowPeriodPopup(false);
+                }}
+                style={{
+                  padding: '15px',
+                  fontSize: '15px',
+                  backgroundColor: period === 'year' ? '#4CAF50' : '#f8f9fa',
+                  color: period === 'year' ? 'white' : '#333',
+                  border: period === 'year' ? 'none' : '1px solid #dee2e6',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                  textAlign: 'left',
+                  transition: 'all 0.2s'
+                }}
+              >
+                📅 This Year
+              </button>
+
+              <button
+                onClick={() => {
+                  setPeriod('custom');
+                  if (!startDate) {
+                    const firstDay = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+                    setStartDate(firstDay.toISOString().split('T')[0]);
+                  }
+                }}
+                style={{
+                  padding: '15px',
+                  fontSize: '15px',
+                  backgroundColor: period === 'custom' ? '#4CAF50' : '#f8f9fa',
+                  color: period === 'custom' ? 'white' : '#333',
+                  border: period === 'custom' ? 'none' : '1px solid #dee2e6',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '500',
+                  textAlign: 'left',
+                  transition: 'all 0.2s'
+                }}
+              >
+                🗓️ Custom Range
+              </button>
+            </div>
+
+            {period === 'custom' && (
+              <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid #eee' }}>
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#666', marginBottom: '5px', fontWeight: '600' }}>
+                    From Date
+                  </label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      fontSize: '14px',
+                      border: '1px solid #ddd',
+                      borderRadius: '6px',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#666', marginBottom: '5px', fontWeight: '600' }}>
+                    To Date
+                  </label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      fontSize: '14px',
+                      border: '1px solid #ddd',
+                      borderRadius: '6px',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={() => setShowPeriodPopup(false)}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    fontSize: '15px',
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600'
+                  }}
+                >
+                  Apply Custom Range
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
