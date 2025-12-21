@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { auth, googleProvider, db } from '../firebase.js';
-import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
+import { auth, db } from '../firebase.js';
+import { signOut, onAuthStateChanged } from 'firebase/auth';
+import { signInGoogle } from '../services/authService.js';
 import { 
   collection, 
   addDoc, 
@@ -159,7 +160,9 @@ export default function Dashboard() {
 
   async function handleLogin() {
     try {
-      await signInWithPopup(auth, googleProvider);
+      console.log('Dashboard: Starting Google Sign-In...');
+      await signInGoogle();
+      console.log('Dashboard: Sign-in successful');
     } catch (error) {
       console.error('Login error:', error);
       showToast('Login failed: ' + error.message, 'error');

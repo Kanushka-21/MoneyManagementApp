@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { signInGoogle } from '../services/authService.js';
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   async function handleSignIn() {
+    console.log('Sign-in button clicked');
     setLoading(true);
     setError('');
     try {
-      await signInGoogle();
+      console.log('Calling signInGoogle...');
+      const result = await signInGoogle();
+      console.log('Sign-in successful:', result);
+      // Navigate to dashboard after successful login
+      navigate('/');
     } catch (err) {
       console.error('Login error:', err);
       setError(err.message || 'Sign-in failed. Please try again.');

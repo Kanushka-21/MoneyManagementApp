@@ -51,20 +51,13 @@ export async function signInGoogle() {
     
     // For web platform, always use popup (NOT redirect)
     console.log('Using popup authentication...');
-    
-    // Clear any existing auth state that might be causing issues
-    try {
-      // Try to clear any stuck auth state
-      if (auth.currentUser) {
-        await signOut(auth);
-      }
-    } catch (clearError) {
-      console.warn('Could not clear existing auth:', clearError);
-    }
+    console.log('Auth domain:', auth.config.authDomain);
+    console.log('Current user before sign-in:', auth.currentUser);
     
     // Use popup with the properly configured provider
+    // Note: This MUST open in a popup window, not a redirect
     const result = await signInWithPopup(auth, googleProvider);
-    console.log('Popup authentication successful');
+    console.log('Popup authentication successful', result);
     return result;
     
   } catch (error) {
@@ -78,6 +71,7 @@ export async function signInGoogle() {
     } else if (error.code === 'auth/popup-closed-by-user') {
       throw new Error('Sign-in cancelled. Please try again.');
     } else if (error.code === 'auth/cancelled-popup-request') {
+      throw new Error('Only one popup request is allowed at a time. Please try again.');
       throw new Error('Only one popup request is allowed at a time. Please try again.');
     } else if (error.message && error.message.includes('missing initial state')) {
       throw new Error('Authentication state error. This usually happens when using third-party cookies blocking. Please:\n1. Enable third-party cookies in your browser\n2. Try in a different browser\n3. Clear browser cache and cookies\n4. Make sure you\'re accessing the app from the correct domain');
