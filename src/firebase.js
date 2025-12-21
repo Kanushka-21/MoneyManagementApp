@@ -16,7 +16,15 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+
+// Configure Google Provider with proper settings
 export const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  prompt: 'select_account',
+  // This helps avoid the "missing initial state" error
+  access_type: 'offline'
+});
+
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export default app;

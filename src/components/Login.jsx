@@ -28,14 +28,11 @@ export default function Login() {
           padding: '1rem',
           borderRadius: '4px',
           marginBottom: '1rem',
-          fontSize: '0.9rem'
+          fontSize: '0.9rem',
+          lineHeight: '1.5'
         }}>
-          {error}
-          {error.includes('Authentication error') && (
-            <div style={{ marginTop: '0.5rem', fontSize: '0.85rem' }}>
-              <strong>To fix:</strong> Go to Settings → Apps → Money Manager → Storage → Clear Data
-            </div>
-          )}
+          <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Sign-in Error:</div>
+          <div style={{ whiteSpace: 'pre-line' }}>{error}</div>
         </div>
       )}
       <button 
@@ -54,6 +51,22 @@ export default function Login() {
       >
         {loading ? 'Signing in...' : 'Sign in with Google'}
       </button>
+      <div style={{
+        marginTop: '1.5rem',
+        padding: '1rem',
+        background: '#e3f2fd',
+        borderRadius: '4px',
+        fontSize: '0.85rem',
+        lineHeight: '1.6'
+      }}>
+        <strong>Troubleshooting Tips:</strong>
+        <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
+          <li>Make sure popups are enabled in your browser</li>
+          <li>Try using Chrome or Firefox if you're having issues</li>
+          <li>Clear your browser cache and cookies</li>
+          <li>If using mobile app, make sure you have Google Play Services installed</li>
+        </ul>
+      </div>
     </div>
   );
 }

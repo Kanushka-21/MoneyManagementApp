@@ -4,4 +4,7 @@
     <string name="title_activity_main">Money Manager</string>
     <string name="package_name">com.moneymanager.app</string>
     <string name="custom_url_scheme">com.moneymanager.app</string>
+    
+    <!-- Google Sign-In Server Client ID -->
+    <string name="server_client_id">698654609012-3rtpod17gvkv41c75rkngng24rdf17kv.apps.googleusercontent.com</string>
 </resources>

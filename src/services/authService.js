@@ -29,6 +29,7 @@ if (Capacitor.isNativePlatform()) {
 
 export async function signInGoogle() {
   try {
+    // Check if running on native platform
     if (Capacitor.isNativePlatform() && isGoogleAuthAvailable && GoogleAuth) {
       try {
         console.log('Attempting native Google Sign-In...');
@@ -39,29 +40,51 @@ export async function signInGoogle() {
         const credential = GoogleAuthProvider.credential(googleUser.authentication.idToken);
         
         // Sign in to Firebase with the credential
-        await signInWithCredential(auth, credential);
+        const result = await signInWithCredential(auth, credential);
         console.log('Native Google Sign-In successful');
-        return;
+        return result;
       } catch (nativeError) {
         console.warn('Native auth failed, falling back to popup:', nativeError);
         // Fall through to popup method
       }
     }
     
-    // Use popup for web or as fallback
+    // For web platform, always use popup (NOT redirect)
     console.log('Using popup authentication...');
-    await signInWithPopup(auth, googleProvider);
+    
+    // Clear any existing auth state that might be causing issues
+    try {
+      // Try to clear any stuck auth state
+      if (auth.currentUser) {
+        await signOut(auth);
+      }
+    } catch (clearError) {
+      console.warn('Could not clear existing auth:', clearError);
+    }
+    
+    // Use popup with the properly configured provider
+    const result = await signInWithPopup(auth, googleProvider);
     console.log('Popup authentication successful');
+    return result;
+    
   } catch (error) {
     console.error('Sign-in error:', error);
+    console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
     
     // Handle specific error cases
     if (error.code === 'auth/popup-blocked') {
-      throw new Error('Popup was blocked. Please allow popups for this app.');
+      throw new Error('Popup was blocked by your browser. Please allow popups for this site and try again.');
     } else if (error.code === 'auth/popup-closed-by-user') {
       throw new Error('Sign-in cancelled. Please try again.');
+    } else if (error.code === 'auth/cancelled-popup-request') {
+      throw new Error('Only one popup request is allowed at a time. Please try again.');
     } else if (error.message && error.message.includes('missing initial state')) {
-      throw new Error('Authentication error. Please clear your app data and try again.');
+      throw new Error('Authentication state error. This usually happens when using third-party cookies blocking. Please:\n1. Enable third-party cookies in your browser\n2. Try in a different browser\n3. Clear browser cache and cookies\n4. Make sure you\'re accessing the app from the correct domain');
+    } else if (error.code === 'auth/unauthorized-domain') {
+      throw new Error('This domain is not authorized for OAuth operations. Please add your domain to Firebase Console.');
+    } else if (error.code === 'auth/operation-not-allowed') {
+      throw new Error('Google sign-in is not enabled. Please enable it in Firebase Console.');
     }
     
     throw error;

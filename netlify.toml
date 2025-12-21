@@ -3,6 +3,22 @@
   publish = "dist"
   command = "npm run build"
 
+# Security headers for Firebase Auth
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # Allow Firebase Auth
+    Access-Control-Allow-Origin = "*"
+    # Prevent clickjacking
+    X-Frame-Options = "SAMEORIGIN"
+    # Enable XSS protection
+    X-XSS-Protection = "1; mode=block"
+    # Prevent MIME sniffing
+    X-Content-Type-Options = "nosniff"
+    # Referrer policy for auth
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
