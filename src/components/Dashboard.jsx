@@ -1343,81 +1343,135 @@ export default function Dashboard() {
           </p>
         ) : (
           <div>
-            {(showAllTransactions ? filteredTxs : filteredTxs.slice(0, 5)).map((tx) => (
-              <div
-                key={tx.id}
-                style={{
-                  borderBottom: '1px solid #f0f0f0',
-                  padding: '12px 0',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '15px',
-                  backgroundColor: tx.type === 'income' ? 'rgba(40, 167, 69, 0.05)' : 'transparent'
-                }}
-              >
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ 
-                    fontSize: '16px', 
-                    fontWeight: '700', 
-                    color: '#222', 
-                    marginBottom: '4px',
+            {(() => {
+              // Group transactions by date
+              const txsToShow = showAllTransactions ? filteredTxs : filteredTxs.slice(0, 5);
+              const groupedByDate = txsToShow.reduce((acc, tx) => {
+                const dateKey = new Date(tx.date).toLocaleDateString();
+                if (!acc[dateKey]) {
+                  acc[dateKey] = [];
+                }
+                acc[dateKey].push(tx);
+                return acc;
+              }, {});
+
+              // Get sorted date keys
+              const sortedDates = Object.keys(groupedByDate).sort((a, b) => {
+                return new Date(groupedByDate[b][0].date) - new Date(groupedByDate[a][0].date);
+              });
+
+              // Alternating background colors
+              const bgColors = ['#f8f9fa', '#ffffff'];
+              
+              return sortedDates.map((dateKey, dateIndex) => (
+                <div key={dateKey} style={{ 
+                  backgroundColor: bgColors[dateIndex % 2],
+                  marginBottom: '10px',
+                  borderRadius: '8px',
+                  overflow: 'hidden'
+                }}>
+                  {/* Date Header */}
+                  <div style={{
+                    padding: '10px 12px',
+                    backgroundColor: dateIndex % 2 === 0 ? '#e9ecef' : '#f1f3f5',
+                    borderBottom: '2px solid #dee2e6',
+                    fontWeight: '600',
+                    fontSize: '14px',
+                    color: '#495057',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px'
+                    gap: '8px'
                   }}>
-                    {tx.type === 'income' ? '💵' : '💸'}
-                    {tx.category}
-                  </div>
-                  {tx.note && (
-                    <div style={{ 
-                      fontSize: '14px', 
-                      color: '#666', 
-                      marginBottom: '4px',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical'
+                    <span>📅</span>
+                    <span>{dateKey}</span>
+                    <span style={{ 
+                      marginLeft: 'auto', 
+                      fontSize: '12px', 
+                      color: '#6c757d',
+                      fontWeight: '500'
                     }}>
-                      {tx.note}
+                      {groupedByDate[dateKey].length} transaction{groupedByDate[dateKey].length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  
+                  {/* Transactions for this date */}
+                  {groupedByDate[dateKey].map((tx, txIndex) => (
+                    <div
+                      key={tx.id}
+                      style={{
+                        borderBottom: txIndex < groupedByDate[dateKey].length - 1 ? '1px solid #e9ecef' : 'none',
+                        padding: '12px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '15px',
+                        backgroundColor: tx.type === 'income' 
+                          ? 'rgba(40, 167, 69, 0.08)' 
+                          : 'transparent'
+                      }}
+                    >
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ 
+                          fontSize: '16px', 
+                          fontWeight: '700', 
+                          color: '#222', 
+                          marginBottom: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}>
+                          {tx.type === 'income' ? '💵' : '💸'}
+                          {tx.category}
+                        </div>
+                        {tx.note && (
+                          <div style={{ 
+                            fontSize: '14px', 
+                            color: '#666', 
+                            marginBottom: '4px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical'
+                          }}>
+                            {tx.note}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        alignItems: 'flex-end', 
+                        gap: '6px' 
+                      }}>
+                        <div style={{ 
+                          fontSize: '18px', 
+                          fontWeight: 'bold', 
+                          color: tx.type === 'income' ? '#28a745' : '#e74c3c', 
+                          whiteSpace: 'nowrap' 
+                        }}>
+                          {tx.type === 'income' ? '+' : '-'}LKR {tx.amount.toFixed(2)}
+                        </div>
+                        <button
+                          onClick={() => handleDelete(tx.id)}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '11px',
+                            backgroundColor: '#dc3545',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
-                  )}
-                  <div style={{ fontSize: '12px', color: '#999' }}>
-                    {new Date(tx.date).toLocaleDateString()}
-                  </div>
+                  ))}
                 </div>
-                <div style={{ 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  alignItems: 'flex-end', 
-                  gap: '6px' 
-                }}>
-                  <div style={{ 
-                    fontSize: '18px', 
-                    fontWeight: 'bold', 
-                    color: tx.type === 'income' ? '#28a745' : '#e74c3c', 
-                    whiteSpace: 'nowrap' 
-                  }}>
-                    {tx.type === 'income' ? '+' : '-'}LKR {tx.amount.toFixed(2)}
-                  </div>
-                  <button
-                    onClick={() => handleDelete(tx.id)}
-                    style={{
-                      padding: '4px 10px',
-                      fontSize: '11px',
-                      backgroundColor: '#dc3545',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
+              ));
+            })()}
             
             {filteredTxs.length > 5 && (
               <button
@@ -2162,109 +2216,205 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Transactions by Category */}
-              <div style={{ marginBottom: '15px' }}>
-                <h4 style={{ fontSize: '14px', color: '#666', marginBottom: '10px', textTransform: 'uppercase' }}>
-                  Transactions by Category
-                </h4>
-                {Object.entries(byCategory).map(([category, txs]) => (
-                  <div 
-                    key={category}
-                    style={{
-                      marginBottom: '15px',
-                      border: '1px solid #e9ecef',
-                      borderRadius: '8px',
-                      overflow: 'hidden'
-                    }}
-                  >
-                    <div style={{
-                      backgroundColor: '#f8f9fa',
-                      padding: '10px 12px',
-                      fontWeight: '600',
-                      fontSize: '14px',
-                      color: '#333',
-                      borderBottom: '1px solid #e9ecef'
-                    }}>
-                      {category}
-                    </div>
-                    
-                    {/* Income transactions */}
-                    {txs.income.length > 0 && (
-                      <div style={{ padding: '8px 12px', backgroundColor: 'rgba(40, 167, 69, 0.05)' }}>
-                        <div style={{ fontSize: '12px', fontWeight: '600', color: '#28a745', marginBottom: '6px' }}>
-                          💵 Income
-                        </div>
-                        {txs.income.map((tx, idx) => (
-                          <div 
-                            key={tx.id}
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              padding: '6px 0',
-                              borderBottom: idx < txs.income.length - 1 ? '1px solid rgba(40, 167, 69, 0.1)' : 'none'
-                            }}
-                          >
-                            <span style={{ fontSize: '13px', color: '#333' }}>
-                              {tx.note || 'No description'}
-                            </span>
-                            <span style={{ fontSize: '14px', fontWeight: '600', color: '#28a745' }}>
-                              +{tx.amount.toFixed(2)}
-                            </span>
+              {/* Transactions Split View - Income Left, Expenses Right */}
+              <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
+                {/* Left Side - Income */}
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ 
+                    fontSize: '14px', 
+                    color: '#28a745', 
+                    marginBottom: '10px', 
+                    textTransform: 'uppercase',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}>
+                    💵 Income
+                  </h4>
+                  <div style={{ 
+                    border: '2px solid #28a745', 
+                    borderRadius: '8px', 
+                    backgroundColor: 'rgba(40, 167, 69, 0.03)',
+                    minHeight: '200px',
+                    maxHeight: '400px',
+                    overflow: 'auto'
+                  }}>
+                    {Object.entries(byCategory).map(([category, txs]) => 
+                      txs.income.length > 0 && (
+                        <div 
+                          key={category}
+                          style={{
+                            marginBottom: '10px',
+                            borderBottom: '1px solid rgba(40, 167, 69, 0.1)',
+                            padding: '10px'
+                          }}
+                        >
+                          <div style={{
+                            fontWeight: '600',
+                            fontSize: '13px',
+                            color: '#28a745',
+                            marginBottom: '8px',
+                            paddingBottom: '5px',
+                            borderBottom: '1px solid rgba(40, 167, 69, 0.2)'
+                          }}>
+                            {category}
                           </div>
-                        ))}
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'flex-end',
-                          paddingTop: '6px',
-                          marginTop: '6px',
-                          borderTop: '1px solid rgba(40, 167, 69, 0.2)'
-                        }}>
-                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#28a745' }}>
-                            Subtotal: +{txs.income.reduce((sum, tx) => sum + tx.amount, 0).toFixed(2)}
-                          </span>
+                          {txs.income.map((tx) => (
+                            <div 
+                              key={tx.id}
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                padding: '6px 0',
+                                fontSize: '13px'
+                              }}
+                            >
+                              <span style={{ color: '#333', flex: 1 }}>
+                                {tx.note || 'No description'}
+                              </span>
+                              <span style={{ fontWeight: '600', color: '#28a745', marginLeft: '10px' }}>
+                                +{tx.amount.toFixed(2)}
+                              </span>
+                            </div>
+                          ))}
+                          <div style={{
+                            textAlign: 'right',
+                            paddingTop: '6px',
+                            marginTop: '4px',
+                            borderTop: '1px solid rgba(40, 167, 69, 0.15)',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            color: '#28a745'
+                          }}>
+                            +{txs.income.reduce((sum, tx) => sum + tx.amount, 0).toFixed(2)}
+                          </div>
                         </div>
-                      </div>
+                      )
                     )}
-                    
-                    {/* Expense transactions */}
-                    {txs.expenses.length > 0 && (
-                      <div style={{ padding: '8px 12px', backgroundColor: 'white' }}>
-                        <div style={{ fontSize: '12px', fontWeight: '600', color: '#dc3545', marginBottom: '6px' }}>
-                          💸 Expenses
-                        </div>
-                        {txs.expenses.map((tx, idx) => (
-                          <div 
-                            key={tx.id}
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              padding: '6px 0',
-                              borderBottom: idx < txs.expenses.length - 1 ? '1px solid #f0f0f0' : 'none'
-                            }}
-                          >
-                            <span style={{ fontSize: '13px', color: '#333' }}>
-                              {tx.note || 'No description'}
-                            </span>
-                            <span style={{ fontSize: '14px', fontWeight: '600', color: '#dc3545' }}>
-                              -{tx.amount.toFixed(2)}
-                            </span>
-                          </div>
-                        ))}
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'flex-end',
-                          paddingTop: '6px',
-                          marginTop: '6px',
-                          borderTop: '1px solid #f0f0f0'
-                        }}>
-                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#dc3545' }}>
-                            Subtotal: -{txs.expenses.reduce((sum, tx) => sum + tx.amount, 0).toFixed(2)}
-                          </span>
-                        </div>
+                    {selectedDayDetails.transactions.filter(tx => tx.type === 'income').length === 0 && (
+                      <div style={{ 
+                        textAlign: 'center', 
+                        padding: '40px 20px', 
+                        color: '#999',
+                        fontSize: '14px'
+                      }}>
+                        No income transactions
                       </div>
                     )}
                   </div>
-                ))}
+                  {/* Income Total */}
+                  <div style={{
+                    marginTop: '10px',
+                    padding: '10px',
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    borderRadius: '6px',
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    fontSize: '16px'
+                  }}>
+                    Total: +{selectedDayDetails.income.toFixed(2)}
+                  </div>
+                </div>
+
+                {/* Right Side - Expenses */}
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ 
+                    fontSize: '14px', 
+                    color: '#dc3545', 
+                    marginBottom: '10px', 
+                    textTransform: 'uppercase',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}>
+                    💸 Expenses
+                  </h4>
+                  <div style={{ 
+                    border: '2px solid #dc3545', 
+                    borderRadius: '8px', 
+                    backgroundColor: 'rgba(220, 53, 69, 0.03)',
+                    minHeight: '200px',
+                    maxHeight: '400px',
+                    overflow: 'auto'
+                  }}>
+                    {Object.entries(byCategory).map(([category, txs]) => 
+                      txs.expenses.length > 0 && (
+                        <div 
+                          key={category}
+                          style={{
+                            marginBottom: '10px',
+                            borderBottom: '1px solid rgba(220, 53, 69, 0.1)',
+                            padding: '10px'
+                          }}
+                        >
+                          <div style={{
+                            fontWeight: '600',
+                            fontSize: '13px',
+                            color: '#dc3545',
+                            marginBottom: '8px',
+                            paddingBottom: '5px',
+                            borderBottom: '1px solid rgba(220, 53, 69, 0.2)'
+                          }}>
+                            {category}
+                          </div>
+                          {txs.expenses.map((tx) => (
+                            <div 
+                              key={tx.id}
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                padding: '6px 0',
+                                fontSize: '13px'
+                              }}
+                            >
+                              <span style={{ color: '#333', flex: 1 }}>
+                                {tx.note || 'No description'}
+                              </span>
+                              <span style={{ fontWeight: '600', color: '#dc3545', marginLeft: '10px' }}>
+                                -{tx.amount.toFixed(2)}
+                              </span>
+                            </div>
+                          ))}
+                          <div style={{
+                            textAlign: 'right',
+                            paddingTop: '6px',
+                            marginTop: '4px',
+                            borderTop: '1px solid rgba(220, 53, 69, 0.15)',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            color: '#dc3545'
+                          }}>
+                            -{txs.expenses.reduce((sum, tx) => sum + tx.amount, 0).toFixed(2)}
+                          </div>
+                        </div>
+                      )
+                    )}
+                    {selectedDayDetails.transactions.filter(tx => tx.type === 'expense').length === 0 && (
+                      <div style={{ 
+                        textAlign: 'center', 
+                        padding: '40px 20px', 
+                        color: '#999',
+                        fontSize: '14px'
+                      }}>
+                        No expense transactions
+                      </div>
+                    )}
+                  </div>
+                  {/* Expenses Total */}
+                  <div style={{
+                    marginTop: '10px',
+                    padding: '10px',
+                    backgroundColor: '#dc3545',
+                    color: 'white',
+                    borderRadius: '6px',
+                    textAlign: 'center',
+                    fontWeight: 'bold',
+                    fontSize: '16px'
+                  }}>
+                    Total: -{selectedDayDetails.expense.toFixed(2)}
+                  </div>
+                </div>
               </div>
 
               <button
