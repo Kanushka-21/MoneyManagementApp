@@ -71,7 +71,7 @@ export default function Login() {
           <li>Make sure popups are enabled in your browser</li>
           <li>Try using Chrome or Firefox if you're having issues</li>
           <li>Clear your browser cache and cookies</li>
-          <li>If using mobile app, make sure you have Google Play Services installed</li>
+
         </ul>
       </div>
     </div>

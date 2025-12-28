@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Pie, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, BarElement, CategoryScale, LinearScale } from 'chart.js';
@@ -19,7 +19,8 @@ import {
   setDoc,
   getDoc,
   updateDoc,
-  getDocs
+  getDocs,
+  limit
 } from 'firebase/firestore';
 import { listLiabilities } from '../services/firestoreService.js';
 import LiabilityList from './LiabilityList.jsx';
@@ -54,6 +55,8 @@ export default function Dashboard() {
   const [showTransactionPopup, setShowTransactionPopup] = useState(null);
   const [showPeriodPopup, setShowPeriodPopup] = useState(false);
   const [showLiabilitiesModal, setShowLiabilitiesModal] = useState(false);
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  const [selectedDayDetails, setSelectedDayDetails] = useState(null);
 
   // Listen to auth state changes
   useEffect(() => {
@@ -1593,7 +1596,12 @@ export default function Dashboard() {
       </div>
 
       {/* Category Breakdown Chart */}
-      {categoryBreakdown.length > 0 && (
+      {categoryBreakdown.length > 0 && (() => {
+        const TOP_CATEGORIES_COUNT = 5;
+        const displayedCategories = showAllCategories ? categoryBreakdown : categoryBreakdown.slice(0, TOP_CATEGORIES_COUNT);
+        const hasMore = categoryBreakdown.length > TOP_CATEGORIES_COUNT;
+        
+        return (
         <div style={{
           backgroundColor: 'white',
           padding: '15px',
@@ -1601,23 +1609,42 @@ export default function Dashboard() {
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
           marginBottom: '15px'
         }}>
-          <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#333' }}>
-            📊 Category Breakdown
-          </h3>
-          <div style={{ height: Math.max(300, categoryBreakdown.length * 50) + 'px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+            <h3 style={{ margin: '0', fontSize: '16px', color: '#333' }}>
+              📊 Category Breakdown
+            </h3>
+            {hasMore && (
+              <button
+                onClick={() => setShowAllCategories(!showAllCategories)}
+                style={{
+                  padding: '5px 12px',
+                  fontSize: '12px',
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                {showAllCategories ? '▲ Show Less' : `▼ Show All (${categoryBreakdown.length})`}
+              </button>
+            )}
+          </div>
+          <div style={{ height: Math.max(300, displayedCategories.length * 50) + 'px' }}>
             <Bar 
               data={{
-                labels: categoryBreakdown.map(c => c.category),
+                labels: displayedCategories.map(c => c.category),
                 datasets: [
                   {
                     label: 'Income',
-                    data: categoryBreakdown.map(c => c.income),
+                    data: displayedCategories.map(c => c.income),
                     backgroundColor: '#28a745',
                     borderRadius: 5
                   },
                   {
                     label: 'Expenses',
-                    data: categoryBreakdown.map(c => c.expense),
+                    data: displayedCategories.map(c => c.expense),
                     backgroundColor: '#dc3545',
                     borderRadius: 5
                   }
@@ -1674,7 +1701,7 @@ export default function Dashboard() {
             />
           </div>
           <div style={{ marginTop: '15px', fontSize: '12px', color: '#666' }}>
-            {categoryBreakdown.map((cat, idx) => (
+            {displayedCategories.map((cat, idx) => (
               <div 
                 key={cat.category}
                 style={{
@@ -1699,7 +1726,8 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* Daily Breakdown */}
       {dailyBreakdownArray.length > 0 && (
@@ -1723,12 +1751,23 @@ export default function Dashboard() {
               return (
                 <div
                   key={day.date}
+                  onClick={() => setSelectedDayDetails(day)}
                   style={{
                     padding: '12px',
                     backgroundColor: idx % 2 === 0 ? '#f8f9fa' : 'white',
                     borderRadius: '6px',
                     marginBottom: '8px',
-                    border: '1px solid #e9ecef'
+                    border: '1px solid #e9ecef',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#e3f2fd';
+                    e.currentTarget.style.transform = 'translateX(3px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = idx % 2 === 0 ? '#f8f9fa' : 'white';
+                    e.currentTarget.style.transform = 'translateX(0)';
                   }}
                 >
                   <div style={{ 
@@ -2015,6 +2054,239 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Daily Transaction Details Popup */}
+      {selectedDayDetails && (() => {
+        const dayDate = new Date(selectedDayDetails.date);
+        const dateStr = dayDate.toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+        
+        // Group transactions by category
+        const byCategory = selectedDayDetails.transactions.reduce((acc, tx) => {
+          if (!acc[tx.category]) {
+            acc[tx.category] = { income: [], expenses: [] };
+          }
+          if (tx.type === 'income') {
+            acc[tx.category].income.push(tx);
+          } else {
+            acc[tx.category].expenses.push(tx);
+          }
+          return acc;
+        }, {});
+        
+        return (
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '20px',
+              zIndex: 10000
+            }}
+            onClick={() => setSelectedDayDetails(null)}
+          >
+            <div 
+              style={{
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                padding: '20px',
+                maxWidth: '600px',
+                width: '100%',
+                maxHeight: '80vh',
+                overflow: 'auto',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ margin: 0, fontSize: '18px', color: '#333' }}>
+                  📅 {dateStr}
+                </h3>
+                <button
+                  onClick={() => setSelectedDayDetails(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    color: '#666',
+                    padding: '0',
+                    lineHeight: '1'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Summary */}
+              <div style={{
+                display: 'flex',
+                gap: '10px',
+                marginBottom: '20px',
+                padding: '15px',
+                backgroundColor: '#f8f9fa',
+                borderRadius: '8px'
+              }}>
+                <div style={{ flex: 1, textAlign: 'center' }}>
+                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>Income</div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#28a745' }}>
+                    +{selectedDayDetails.income.toFixed(2)}
+                  </div>
+                </div>
+                <div style={{ flex: 1, textAlign: 'center' }}>
+                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>Expenses</div>
+                  <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#dc3545' }}>
+                    -{selectedDayDetails.expense.toFixed(2)}
+                  </div>
+                </div>
+                <div style={{ flex: 1, textAlign: 'center' }}>
+                  <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>Net</div>
+                  <div style={{ 
+                    fontSize: '20px', 
+                    fontWeight: 'bold', 
+                    color: (selectedDayDetails.income - selectedDayDetails.expense) >= 0 ? '#28a745' : '#dc3545' 
+                  }}>
+                    {(selectedDayDetails.income - selectedDayDetails.expense) >= 0 ? '+' : ''}
+                    {(selectedDayDetails.income - selectedDayDetails.expense).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Transactions by Category */}
+              <div style={{ marginBottom: '15px' }}>
+                <h4 style={{ fontSize: '14px', color: '#666', marginBottom: '10px', textTransform: 'uppercase' }}>
+                  Transactions by Category
+                </h4>
+                {Object.entries(byCategory).map(([category, txs]) => (
+                  <div 
+                    key={category}
+                    style={{
+                      marginBottom: '15px',
+                      border: '1px solid #e9ecef',
+                      borderRadius: '8px',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <div style={{
+                      backgroundColor: '#f8f9fa',
+                      padding: '10px 12px',
+                      fontWeight: '600',
+                      fontSize: '14px',
+                      color: '#333',
+                      borderBottom: '1px solid #e9ecef'
+                    }}>
+                      {category}
+                    </div>
+                    
+                    {/* Income transactions */}
+                    {txs.income.length > 0 && (
+                      <div style={{ padding: '8px 12px', backgroundColor: 'rgba(40, 167, 69, 0.05)' }}>
+                        <div style={{ fontSize: '12px', fontWeight: '600', color: '#28a745', marginBottom: '6px' }}>
+                          💵 Income
+                        </div>
+                        {txs.income.map((tx, idx) => (
+                          <div 
+                            key={tx.id}
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              padding: '6px 0',
+                              borderBottom: idx < txs.income.length - 1 ? '1px solid rgba(40, 167, 69, 0.1)' : 'none'
+                            }}
+                          >
+                            <span style={{ fontSize: '13px', color: '#333' }}>
+                              {tx.note || 'No description'}
+                            </span>
+                            <span style={{ fontSize: '14px', fontWeight: '600', color: '#28a745' }}>
+                              +{tx.amount.toFixed(2)}
+                            </span>
+                          </div>
+                        ))}
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'flex-end',
+                          paddingTop: '6px',
+                          marginTop: '6px',
+                          borderTop: '1px solid rgba(40, 167, 69, 0.2)'
+                        }}>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#28a745' }}>
+                            Subtotal: +{txs.income.reduce((sum, tx) => sum + tx.amount, 0).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Expense transactions */}
+                    {txs.expenses.length > 0 && (
+                      <div style={{ padding: '8px 12px', backgroundColor: 'white' }}>
+                        <div style={{ fontSize: '12px', fontWeight: '600', color: '#dc3545', marginBottom: '6px' }}>
+                          💸 Expenses
+                        </div>
+                        {txs.expenses.map((tx, idx) => (
+                          <div 
+                            key={tx.id}
+                            style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              padding: '6px 0',
+                              borderBottom: idx < txs.expenses.length - 1 ? '1px solid #f0f0f0' : 'none'
+                            }}
+                          >
+                            <span style={{ fontSize: '13px', color: '#333' }}>
+                              {tx.note || 'No description'}
+                            </span>
+                            <span style={{ fontSize: '14px', fontWeight: '600', color: '#dc3545' }}>
+                              -{tx.amount.toFixed(2)}
+                            </span>
+                          </div>
+                        ))}
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'flex-end',
+                          paddingTop: '6px',
+                          marginTop: '6px',
+                          borderTop: '1px solid #f0f0f0'
+                        }}>
+                          <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#dc3545' }}>
+                            Subtotal: -{txs.expenses.reduce((sum, tx) => sum + tx.amount, 0).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setSelectedDayDetails(null)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontSize: '15px',
+                  backgroundColor: '#f8f9fa',
+                  color: '#495057',
+                  border: '1px solid #dee2e6',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: '500'
+                }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Confirm Dialog */}
       {confirmDialog.show && (
