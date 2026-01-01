@@ -61,6 +61,7 @@ export default function Dashboard() {
   // Listen to auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      console.log('Auth state changed:', currentUser ? `User: ${currentUser.uid} (${currentUser.email})` : 'No user');
       setUser(currentUser);
       if (currentUser) {
         await loadUserCategories(currentUser.uid);
@@ -76,6 +77,7 @@ export default function Dashboard() {
       return;
     }
 
+    console.log('Setting up transaction listener for user:', user.uid);
     const q = query(
       collection(db, 'transactions'),
       where('uid', '==', user.uid),
@@ -88,6 +90,7 @@ export default function Dashboard() {
           id: doc.id,
           ...doc.data()
         }));
+        console.log(`Loaded ${txs.length} transactions for user ${user.uid}`);
         setTransactions(txs);
       },
       (error) => {
