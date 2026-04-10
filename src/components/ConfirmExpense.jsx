@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { saveTransaction } from '../services/firestoreService.js';
+import API from '../api/client.js';
 
 export default function ConfirmExpense() {
   const location = useLocation();

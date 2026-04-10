@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { saveTransaction } from '../services/firestoreService.js';
-import { uploadReceipt } from '../services/storageService.js';
+import API from '../api/client.js';
 import { CATEGORIES } from '../utils/categories.js';
 
 export default function ExpenseForm() {

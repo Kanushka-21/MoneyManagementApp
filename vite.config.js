@@ -7,6 +7,15 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     emptyOutDir: true,
-    minify: false
+    minify: 'terser',
+    sourcemap: false,
+    target: ['esnext', 'es2020']
+  },
+  server: {
+    port: 3000,
+    open: true
+  },
+  ssr: {
+    external: ['firebase']
   }
 });

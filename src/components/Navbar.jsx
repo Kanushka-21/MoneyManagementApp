@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useCurrentUser, logout } from '../services/authService.js';
+import { useCurrentUser } from '../hooks/useAuth.js';
+import { logout } from '../services/authService.js';
 
 export default function Navbar() {
   const user = useCurrentUser();

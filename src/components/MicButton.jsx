@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { parseLocal } from '../utils/parseLocal.js';
 import { useNavigate } from 'react-router-dom';
-import { saveTransaction } from '../services/firestoreService.js';
-import { auth } from '../firebase.js';
+import API from '../api/client.js';
+import { auth } from '../config/firebase.js';
 
 export default function MicButton() {
   const [listening, setListening] = useState(false);

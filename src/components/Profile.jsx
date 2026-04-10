@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useCurrentUser } from '../services/authService.js';
+import { useCurrentUser } from '../hooks/useAuth.js';
 
 export default function Profile() {
   const navigate = useNavigate();

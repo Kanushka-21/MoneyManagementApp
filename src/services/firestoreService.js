@@ -1,6 +1,5 @@
-import { db } from '../firebase.js';
+import { db, auth } from '../config/firebase.js';
 import { collection, addDoc, serverTimestamp, query, where, orderBy, getDocs, doc, updateDoc, deleteDoc, getDoc } from 'firebase/firestore';
-import { auth } from '../firebase.js';
 
 export async function saveTransaction(tx) {
   const uid = auth.currentUser?.uid;

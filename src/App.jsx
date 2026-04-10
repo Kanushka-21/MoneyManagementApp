@@ -1,6 +1,6 @@
 import React from 'react';
 import AppRoutes from './routes.jsx';
-import { useAuthInit } from './services/authService.js';
+import { useAuthInit } from './hooks/useAuth.js';
 
 export default function App() {
   useAuthInit();

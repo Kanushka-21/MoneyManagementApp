@@ -1,4 +1,4 @@
-import { storage, auth } from '../firebase.js';
+import { storage, auth } from '../config/firebase.js';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 export async function uploadReceipt(file) {

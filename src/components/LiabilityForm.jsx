@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { saveLiability } from '../services/firestoreService.js';
+import API from '../api/client.js';
 
 const LIABILITY_CATEGORIES = [
   'Credit Card Payment',

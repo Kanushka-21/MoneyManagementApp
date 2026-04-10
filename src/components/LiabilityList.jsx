@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { listLiabilities, deleteLiability, updateLiability } from '../services/firestoreService.js';
+import API from '../api/client.js';
 import LiabilityForm from './LiabilityForm.jsx';
 
 export default function LiabilityList({ onClose, asModal = false }) {

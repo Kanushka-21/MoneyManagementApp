@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { listTransactions, deleteTransaction } from '../services/firestoreService.js';
+import API from '../api/client.js';
 
 export default function TransactionList() {
   const navigate = useNavigate();

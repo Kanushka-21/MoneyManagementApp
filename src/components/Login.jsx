@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signInGoogle } from '../services/authService.js';
+import API from '../api/client.js';
 
 export default function Login() {
   const [loading, setLoading] = useState(false);
